@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kasir · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 <body class="bg-espresso-50 font-sans text-espresso-900 antialiased">
 <div x-data="cashierApp(@js($menu), @js($pending), @js($processing), @js(route('cashier.pending')))" class="flex h-screen flex-col">
@@ -18,6 +19,11 @@
             </div>
         </div>
         <div class="flex items-center gap-2 text-sm">
+            <form method="POST" action="{{ route('cashier.busy') }}">
+                @csrf
+                <button class="rounded-lg px-3 py-1.5 font-semibold {{ $busy ? 'bg-amber-400 text-espresso-900' : 'hover:bg-espresso-800' }}"
+                        title="Beri tahu pelanggan bahwa pesanan mungkin sedikit terlambat">⏳ {{ $busy ? 'Mode ramai: aktif' : 'Mode ramai' }}</button>
+            </form>
             <x-order-alerts :href="route('cashier.index')" dark />
             @if (auth()->user()->isAdmin())
                 <a href="{{ route('admin.dashboard') }}" class="rounded-lg px-3 py-1.5 hover:bg-espresso-800">Panel admin</a>
@@ -146,7 +152,7 @@
                     <div class="rounded-2xl bg-white p-4 shadow-sm ring-1" :class="o.proof_url ? 'ring-blue-300' : 'ring-espresso-100'">
                         <div class="flex items-start justify-between gap-2">
                             <div>
-                                <p class="flex items-center gap-2"><span class="font-display text-xl font-semibold" x-text="o.code"></span> <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums" :class="waitClass(o)" :title="'Menunggu sejak ' + o.time">⏱ <span x-text="waited(o) + ' mnt'"></span></span></p>
+                                <p class="flex items-center gap-2"><span class="font-display text-xl font-semibold" x-text="o.code"></span> <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums" :class="waitClass(o)" :title="'Menunggu sejak ' + o.time">⏱ <span x-text="waited(o) + (o.eta ? ' / ' + o.eta : '') + ' mnt'"></span></span></p>
                                 <p class="text-sm text-espresso-600">
                                     <span x-text="o.customer_name"></span> ·
                                     <span x-text="o.table_number ? 'Meja ' + o.table_number : 'Bawa pulang'"></span> ·
@@ -192,7 +198,7 @@
                     <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-espresso-100">
                         <div class="flex items-start justify-between gap-2">
                             <div>
-                                <p class="flex items-center gap-2"><span class="font-display text-xl font-semibold" x-text="o.code"></span> <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums" :class="waitClass(o)" :title="'Menunggu sejak ' + o.time">⏱ <span x-text="waited(o) + ' mnt'"></span></span></p>
+                                <p class="flex items-center gap-2"><span class="font-display text-xl font-semibold" x-text="o.code"></span> <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums" :class="waitClass(o)" :title="'Menunggu sejak ' + o.time">⏱ <span x-text="waited(o) + (o.eta ? ' / ' + o.eta : '') + ' mnt'"></span></span></p>
                                 <p class="text-sm text-espresso-600">
                                     <span x-text="o.customer_name || 'Tanpa nama'"></span> ·
                                     <span x-text="o.table_number ? 'Meja ' + o.table_number : 'Bawa pulang'"></span> ·

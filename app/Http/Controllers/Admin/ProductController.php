@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Ingredient;
+use App\Support\Costing;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,6 +38,7 @@ class ProductController extends Controller
             'product' => new Product(['is_available' => true]),
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(),
             'ingredients' => Ingredient::orderBy('name')->get(),
+            'overheadPerServing' => Costing::overheadPerServing(),
         ]);
     }
 
@@ -60,6 +62,7 @@ class ProductController extends Controller
             'product' => $product->load('ingredients'),
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(),
             'ingredients' => Ingredient::orderBy('name')->get(),
+            'overheadPerServing' => Costing::overheadPerServing(),
         ]);
     }
 
@@ -100,6 +103,8 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'integer', 'min:0'],
+            'prep_minutes' => ['nullable', 'integer', 'min:1', 'max:180'],
+            'manual_cost' => ['nullable', 'integer', 'min:0'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'recipe' => ['nullable', 'array'],

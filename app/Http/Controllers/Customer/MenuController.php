@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Promotion;
 use App\Models\Setting;
+use App\Support\Busy;
 use App\Support\WhatsApp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -40,18 +41,20 @@ class MenuController extends Controller
                 'available' => $product->isOrderable(),
                 'left' => $product->servingsLeft(),
                 'featured' => $product->is_featured,
+                'prep' => $product->prep_minutes,
                 'group' => $category->group,
             ])->values(),
         ])->values();
 
         return view('customer.menu', [
             'menu' => $menu,
-            'banners' => Promotion::running()->whereNotNull('image_path')->latest()->get(),
+            'banners' => Promotion::running()->latest()->get(),
             'autoPromos' => Promotion::running()->whereNotNull('discount_type')->whereNull('voucher_code')->get()
                 ->map(fn ($p) => $this->promoPayload($p))->values(),
             'table' => $request->string('meja')->limit(10, '')->toString(),
             'paymentMethods' => Order::availableSelfPaymentMethods(),
             'popup' => $this->popupPayload(),
+            'busyMessage' => Busy::message(),
         ]);
     }
 
@@ -131,10 +134,12 @@ class MenuController extends Controller
         $qris = Setting::get('qris_image_path');
 
         return view('customer.order', [
-            'order' => $order->load('items'),
+            'order' => $order->load('items.product'),
             'qrisUrl' => $qris ? Storage::disk('public')->url($qris) : null,
             'bankAccounts' => Setting::get('bank_accounts'),
             'paymentMethods' => Order::availableSelfPaymentMethods(),
+            'estimate' => $order->estimatedMinutes(),
+            'busyMessage' => Busy::message(),
         ]);
     }
 

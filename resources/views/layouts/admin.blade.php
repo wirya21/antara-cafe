@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin') · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 <body class="min-h-screen bg-espresso-50 font-sans text-espresso-900 antialiased">
     @php
@@ -13,6 +14,7 @@
             ['admin.reports.index', 'Laporan', 'admin.reports.*'],
             ['admin.orders.index', 'Transaksi', 'admin.orders.*'],
             ['admin.products.index', 'Produk', 'admin.products.*'],
+            ['admin.recipes.index', 'Resep & stok', 'admin.recipes.*'],
             ['admin.ingredients.index', 'Stok bahan', 'admin.ingredients.*'],
             ['admin.categories.index', 'Kategori', 'admin.categories.*'],
             ['admin.promotions.index', 'Promo & voucher', 'admin.promotions.*'],

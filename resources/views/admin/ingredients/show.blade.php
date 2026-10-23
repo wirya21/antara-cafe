@@ -12,10 +12,28 @@
             <p class="text-sm text-espresso-600">Harga rata-rata</p>
             <p class="text-2xl font-semibold">Rp{{ number_format($ingredient->cost_per_unit, 2, ',', '.') }}<span class="text-sm font-normal">/{{ $ingredient->unit }}</span></p>
         </div>
-        <div class="text-sm text-espresso-600">
-            Dipakai di: {{ $ingredient->products->pluck('name')->join(', ') ?: '-' }}
-        </div>
         <a href="{{ route('admin.ingredients.index') }}" class="btn-ghost ml-auto">← Semua bahan</a>
+    </div>
+
+    <div class="card mb-4 p-4 sm:p-5">
+        <h2 class="font-semibold">Menu yang memakai bahan ini</h2>
+        @if ($ingredient->products->isEmpty())
+            <p class="mt-2 text-sm text-espresso-600">Belum dipakai di resep mana pun, jadi stoknya tidak berkurang otomatis.</p>
+        @else
+            <ul class="mt-2 divide-y divide-espresso-50 text-sm">
+                @foreach ($ingredient->products as $product)
+                    <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                        <a href="{{ route('admin.products.edit', $product) }}" class="hover:underline">{{ $product->name }}</a>
+                        <span class="text-espresso-600">butuh <x-qty :value="$product->pivot->quantity" /> {{ $ingredient->unit }}/porsi ·
+                            <b class="{{ $ingredient->stock < $product->pivot->quantity ? 'text-red-700' : 'text-espresso-900' }}">cukup untuk {{ (int) floor(max($ingredient->stock, 0) / $product->pivot->quantity + 1e-9) }} porsi</b></span>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+        <details class="mt-3">
+            <summary class="cursor-pointer text-sm font-semibold text-espresso-700">Ubah stok bahan ini</summary>
+            <x-stock-move-form :ingredient="$ingredient" class="mt-3 flex flex-wrap items-end gap-3" />
+        </details>
     </div>
 
     <div class="card overflow-x-auto">

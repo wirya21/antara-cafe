@@ -29,6 +29,11 @@ class Inventory
                 $this->move($ingredient, 'sale', -$used, order: $order, note: "{$item->quantity}× {$item->product_name}");
             }
 
+            // Menu tanpa resep memakai harga pokok manual dari admin.
+            if ($ingredients->isEmpty()) {
+                $unitCost = (int) $item->product?->manual_cost;
+            }
+
             $item->update(['cost' => (int) round($unitCost)]);
         }
     }

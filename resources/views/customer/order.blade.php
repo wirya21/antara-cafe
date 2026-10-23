@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#2b1b0e">
     <title>Pesanan {{ $order->code }} · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 @php
     $stage = $order->stage();
@@ -78,6 +79,20 @@
                 <span class="rounded-full bg-espresso-50/10 px-3 py-1.5 font-semibold text-espresso-50 tabular-nums">
                     ⏱ <span x-text="waited">0</span> mnt {{ $stage === 'processing' ? 'sejak dibayar' : 'sejak memesan' }}
                 </span>
+                @if ($estimate)
+                    <span class="rounded-full bg-espresso-50 px-3 py-1.5 font-semibold text-espresso-900">
+                        @if ($stage === 'processing')
+                            Perkiraan siap ± {{ $estimate }} mnt <span class="font-normal text-espresso-600">(± {{ $order->paid_at->copy()->addMinutes($estimate)->format('H:i') }})</span>
+                        @else
+                            Dibuat ± {{ $estimate }} mnt setelah dibayar
+                        @endif
+                    </span>
+                @endif
+            </div>
+            @if ($busyMessage)
+                <p class="mx-auto mt-3 max-w-sm rounded-2xl bg-amber-100 px-4 py-2.5 text-center text-sm font-semibold text-amber-900">⏳ {{ $busyMessage }}</p>
+            @endif
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-sm">
                 <button type="button" x-show="permission === 'default'" @click="enableAlerts()"
                         class="rounded-full bg-amber-400 px-3 py-1.5 font-semibold text-espresso-900 shadow">🔔 Kabari saya saat siap</button>
                 <span x-show="permission === 'granted'" x-cloak class="rounded-full bg-green-600/90 px-3 py-1.5 font-semibold text-white">🔔 Notifikasi aktif</span>

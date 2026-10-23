@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#2b1b0e">
     <title>Menu · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 <body class="bg-[#f7f1ea] font-sans text-espresso-900 antialiased">
 <div x-data="menuApp(@js($menu), @js([
@@ -53,15 +54,32 @@
 
     <main class="mx-auto max-w-6xl px-4 pb-32 sm:px-6 lg:pb-12">
 
+        @if ($busyMessage)
+            <div class="mt-5 flex items-start gap-3 rounded-2xl bg-amber-100 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-300">
+                <span class="text-xl leading-none">⏳</span><p class="font-semibold">{{ $busyMessage }}</p>
+            </div>
+        @endif
+
         {{-- Banner promo --}}
         @if ($banners->isNotEmpty())
             <section x-show="!search" class="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 sm:-mx-6 sm:scroll-px-6 sm:px-6">
                 @foreach ($banners as $banner)
-                    <div class="relative aspect-[21/9] w-[88%] shrink-0 snap-center overflow-hidden rounded-3xl bg-espresso-800 sm:w-[60%]">
-                        <img src="{{ Storage::disk('public')->url($banner->image_path) }}" alt="{{ $banner->title }}" class="h-full w-full object-cover">
-                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
+                    <div class="relative aspect-[21/9] min-h-36 w-[88%] shrink-0 snap-center overflow-hidden rounded-3xl bg-gradient-to-br from-espresso-800 via-espresso-700 to-amber-600 sm:w-[60%]">
+                        @if ($banner->image_path)
+                            <img src="{{ Storage::disk('public')->url($banner->image_path) }}" alt="{{ $banner->title }}" class="h-full w-full object-cover">
+                        @else
+                            <div class="pointer-events-none absolute -top-10 -right-8 h-40 w-40 rounded-full bg-white/10"></div>
+                            <div class="pointer-events-none absolute right-6 bottom-6 text-6xl opacity-90 drop-shadow-lg">🎉</div>
+                            @if ($banner->discount_type)
+                                <span class="absolute top-4 left-4 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-espresso-900">
+                                    {{ $banner->discount_type === 'percent' ? 'Diskon '.$banner->discount_value.'%' : 'Hemat Rp'.number_format($banner->discount_value, 0, ',', '.') }}
+                                </span>
+                            @endif
+                        @endif
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pr-20 text-white">
                             <p class="font-display text-lg font-semibold">{{ $banner->title }}</p>
-                            @if ($banner->description)<p class="text-sm text-white/80">{{ $banner->description }}</p>@endif
+                            @if ($banner->description)<p class="line-clamp-2 text-sm text-white/80">{{ $banner->description }}</p>@endif
+                            @if ($banner->voucher_code)<p class="mt-1 text-xs">Kode: <b class="rounded bg-white/20 px-1.5 py-0.5 tracking-wider">{{ $banner->voucher_code }}</b></p>@endif
                         </div>
                     </div>
                 @endforeach
@@ -377,6 +395,7 @@
                         <span class="text-lg font-bold text-espresso-700" x-text="rupiah(detail.price)"></span>
                     </div>
                     <p class="mt-2 text-sm text-espresso-600" x-text="detail.description"></p>
+                    <p x-show="detail.prep" class="mt-2 text-sm text-espresso-700">⏱ Perkiraan dibuat ± <b x-text="detail.prep"></b> menit</p>
                     <label class="label mt-4" for="detail_note">Catatan <span class="font-normal text-espresso-500">(opsional)</span></label>
                     <input id="detail_note" x-model="detailNote" maxlength="120" class="input" placeholder="mis. less sugar, tanpa es">
                     <p x-show="detail.left !== null && detail.left <= {{ \App\Models\Product::LOW_SERVINGS }}" class="mt-4 text-sm font-semibold text-red-600"

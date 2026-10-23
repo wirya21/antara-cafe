@@ -15,7 +15,7 @@ class IngredientController extends Controller
 {
     public function index(Request $request): View
     {
-        $ingredients = Ingredient::withCount('products')
+        $ingredients = Ingredient::with('products:id,name')
             ->when($request->filled('q'), fn ($q) => $q->where('name', 'like', '%'.$request->string('q').'%'))
             ->when($request->input('status') === 'menipis', fn ($q) => $q->low())
             ->orderByRaw('stock <= min_stock desc')
