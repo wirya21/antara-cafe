@@ -18,17 +18,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $email = env('ADMIN_EMAIL', 'admin@antaracafe.test');
+        $username = env('ADMIN_USERNAME', 'admin');
         $password = env('ADMIN_PASSWORD') ?: Str::password(14, symbols: false);
 
-        User::updateOrCreate(['email' => $email], [
+        User::updateOrCreate(['username' => $username], [
             'name' => 'Admin Antara',
+            'email' => env('ADMIN_EMAIL'),
             'password' => $password,
             'role' => 'admin',
         ]);
 
         if (! env('ADMIN_PASSWORD')) {
-            $this->command?->warn("Akun admin: {$email} / {$password} (simpan, lalu ganti setelah login)");
+            $this->command?->warn("Akun admin: {$username} / {$password} (simpan, lalu ganti setelah login)");
         }
 
         $menu = [

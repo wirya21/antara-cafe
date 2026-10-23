@@ -14,7 +14,7 @@
             <span class="grid h-9 w-9 place-items-center rounded-full bg-espresso-50 text-lg">☕</span>
             <div>
                 <p class="font-display text-lg leading-none font-semibold">Antara Cafe</p>
-                <p class="text-xs text-espresso-200">Kasir · {{ auth()->user()->name }}</p>
+                <a href="{{ route('password.edit') }}" class="text-xs text-espresso-200 hover:underline">Kasir · {{ auth()->user()->name }}</a>
             </div>
         </div>
         <div class="flex items-center gap-2 text-sm">

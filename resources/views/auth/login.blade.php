@@ -11,16 +11,16 @@
         <div class="mb-6 text-center text-espresso-50">
             <div class="text-4xl">☕</div>
             <h1 class="mt-2 text-2xl font-semibold">Antara Cafe</h1>
-            <p class="text-sm text-espresso-200">Masuk ke panel admin</p>
+            <p class="text-sm text-espresso-200">Masuk sebagai admin atau kasir</p>
         </div>
 
         <form method="POST" action="{{ route('login') }}" class="card space-y-4 p-6">
             @csrf
 
             <div>
-                <label for="email" class="label">Email</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" class="input">
-                @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <label for="username" class="label">Username</label>
+                <input id="username" name="username" value="{{ old('username') }}" required autofocus autocomplete="username" autocapitalize="none" class="input">
+                @error('username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>

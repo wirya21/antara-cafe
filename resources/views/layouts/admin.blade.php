@@ -38,7 +38,7 @@
             <header class="flex items-center justify-between border-b border-espresso-100 bg-white px-6 py-3">
                 <h1 class="text-lg font-semibold">@yield('title')</h1>
                 <div class="flex items-center gap-3 text-sm">
-                    <span class="text-espresso-600">{{ auth()->user()->name }}</span>
+                    <a href="{{ route('password.edit') }}" class="text-espresso-600 hover:underline" title="Ganti password">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="btn-ghost py-1.5">Keluar</button>

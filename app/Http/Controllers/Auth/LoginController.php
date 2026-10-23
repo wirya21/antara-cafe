@@ -20,16 +20,20 @@ class LoginController extends Controller
 
     public function login(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $data = $request->validate([
+            'username' => ['required', 'string', 'max:150'],
             'password' => ['required', 'string'],
         ]);
 
-        $throttleKey = Str::lower($credentials['email']).'|'.$request->ip();
+        // Bisa masuk dengan username atau email.
+        $field = str_contains($data['username'], '@') ? 'email' : 'username';
+        $credentials = [$field => $data['username'], 'password' => $data['password']];
+
+        $throttleKey = Str::lower($data['username']).'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             throw ValidationException::withMessages([
-                'email' => 'Terlalu banyak percobaan. Coba lagi dalam '.RateLimiter::availableIn($throttleKey).' detik.',
+                'username' => 'Terlalu banyak percobaan. Coba lagi dalam '.RateLimiter::availableIn($throttleKey).' detik.',
             ]);
         }
 
@@ -37,7 +41,7 @@ class LoginController extends Controller
             RateLimiter::hit($throttleKey, 60);
 
             throw ValidationException::withMessages([
-                'email' => 'Email atau password salah.',
+                'username' => 'Username atau password salah.',
             ]);
         }
 

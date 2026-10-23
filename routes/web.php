@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Cashier\CashierController;
 use App\Http\Controllers\Customer\DisplayController;
 use App\Http\Controllers\Customer\MenuController;
@@ -23,6 +24,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/akun/password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/akun/password', [PasswordController::class, 'update'])->name('password.update');
+});
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
