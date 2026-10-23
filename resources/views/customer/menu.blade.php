@@ -23,7 +23,7 @@
         <div class="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-espresso-600/40 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-32 left-10 h-72 w-72 rounded-full bg-amber-500/20 blur-3xl"></div>
 
-        <div class="relative mx-auto max-w-6xl px-4 pt-6 pb-8 sm:px-6">
+        <div class="relative mx-auto max-w-6xl px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-7 sm:px-6 sm:pt-8 sm:pb-10">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="grid h-10 w-10 place-items-center rounded-full bg-espresso-50 text-xl">☕</span>
@@ -34,7 +34,7 @@
                 </template>
             </div>
 
-            <h1 class="mt-8 max-w-md font-display text-3xl leading-tight font-semibold sm:text-4xl">
+            <h1 class="mt-6 max-w-md font-display text-3xl leading-tight font-semibold sm:text-4xl">
                 Mau ngopi apa hari ini?
             </h1>
             <p class="mt-2 text-sm text-espresso-200">Pilih menu, kirim pesanan, bayar di kasir. Tanpa daftar, tanpa login.</p>
@@ -107,7 +107,7 @@
                 <h2 class="font-display text-xl font-semibold" x-text="c.name"></h2>
                 <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
                     <template x-for="p in c.products" :key="p.id">
-                        <article class="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-espresso-100 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-espresso-900/10"
+                        <article class="group flex min-w-0 flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-espresso-100 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-espresso-900/10"
                                  :class="!p.available && 'opacity-60'">
                             <button type="button" @click="openDetail(p)" class="relative aspect-square overflow-hidden" :disabled="!p.available">
                                 <template x-if="p.image">
@@ -121,21 +121,31 @@
                                 <span x-show="!p.available" class="absolute inset-0 grid place-items-center bg-black/40 text-sm font-semibold text-white">Habis</span>
                             </button>
                             <div class="flex flex-1 flex-col p-3 sm:p-4">
-                                <h3 class="leading-tight font-semibold" x-text="p.name"></h3>
+                                <h3 class="text-sm leading-tight font-semibold sm:text-base" x-text="p.name"></h3>
                                 <p class="mt-1 line-clamp-2 text-xs text-espresso-600" x-text="p.description"></p>
-                                <div class="mt-auto flex items-center justify-between pt-3">
-                                    <span class="font-bold text-espresso-700" x-text="rupiah(p.price)"></span>
+                                <p class="mt-auto pt-2 font-bold text-espresso-700" x-text="rupiah(p.price)"></p>
+                                <div class="pt-2">
                                     <template x-if="p.available && !qtyOf(p.id)">
                                         <button type="button" @click="add(p.id)" aria-label="Tambah"
-                                                class="grid h-9 w-9 place-items-center rounded-full bg-espresso-800 text-xl text-white shadow-md transition hover:bg-espresso-700 active:scale-90">+</button>
+                                                class="flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-espresso-800 text-sm font-semibold text-white shadow-md shadow-espresso-900/20 transition hover:bg-espresso-700 active:scale-95">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                            Tambah
+                                        </button>
                                     </template>
                                     <template x-if="p.available && qtyOf(p.id)">
-                                        <div class="flex items-center gap-2 rounded-full bg-espresso-100 p-1">
-                                            <button type="button" @click="decrement(p.id)" class="grid h-7 w-7 place-items-center rounded-full bg-white font-bold active:scale-90">−</button>
-                                            <span class="w-4 text-center text-sm font-bold" x-text="qtyOf(p.id)"></span>
-                                            <button type="button" @click="add(p.id)" class="grid h-7 w-7 place-items-center rounded-full bg-espresso-800 font-bold text-white active:scale-90">+</button>
+                                        <div class="flex h-10 w-full items-center justify-between rounded-full bg-espresso-100 p-1">
+                                            <button type="button" @click="decrement(p.id)" aria-label="Kurangi"
+                                                    class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-espresso-800 shadow-sm transition active:scale-90">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
+                                            </button>
+                                            <span class="min-w-6 text-center text-base font-bold tabular-nums text-espresso-900" x-text="qtyOf(p.id)"></span>
+                                            <button type="button" @click="add(p.id)" aria-label="Tambah satu lagi"
+                                                    class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-espresso-800 text-white shadow-sm transition active:scale-90">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                            </button>
                                         </div>
                                     </template>
+                                    <p x-show="!p.available" class="flex h-10 items-center justify-center rounded-full bg-espresso-50 text-sm font-semibold text-espresso-500">Habis</p>
                                 </div>
                             </div>
                         </article>
@@ -198,9 +208,13 @@
                                 <p class="text-sm font-semibold text-espresso-700" x-text="rupiah(product(line.id).price * line.qty)"></p>
                             </div>
                             <div class="flex items-center gap-2 self-center">
-                                <button type="button" @click="changeLine(i, -1)" class="grid h-7 w-7 place-items-center rounded-full bg-espresso-100 font-bold">−</button>
-                                <span class="w-4 text-center text-sm font-bold" x-text="line.qty"></span>
-                                <button type="button" @click="changeLine(i, 1)" class="grid h-7 w-7 place-items-center rounded-full bg-espresso-800 font-bold text-white">+</button>
+                                <button type="button" @click="changeLine(i, -1)" aria-label="Kurangi" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-100 text-espresso-800 active:scale-90">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
+                                </button>
+                                <span class="min-w-6 text-center text-sm font-bold tabular-nums" x-text="line.qty"></span>
+                                <button type="button" @click="changeLine(i, 1)" aria-label="Tambah" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-800 text-white active:scale-90">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                </button>
                             </div>
                             <input type="hidden" :name="`items[${i}][product_id]`" :value="line.id">
                             <input type="hidden" :name="`items[${i}][quantity]`" :value="line.qty">
@@ -274,7 +288,7 @@
                     <div class="mt-5 flex items-center gap-4">
                         <div class="flex items-center gap-3 rounded-full bg-espresso-100 p-1.5">
                             <button type="button" @click="detailQty = Math.max(1, detailQty - 1)" class="grid h-9 w-9 place-items-center rounded-full bg-white text-lg font-bold">−</button>
-                            <span class="w-5 text-center font-bold" x-text="detailQty"></span>
+                            <span class="min-w-6 text-center font-bold tabular-nums" x-text="detailQty"></span>
                             <button type="button" @click="detailQty++" class="grid h-9 w-9 place-items-center rounded-full bg-espresso-800 text-lg font-bold text-white">+</button>
                         </div>
                         <button type="button" @click="addDetail()" class="flex-1 rounded-2xl bg-espresso-800 py-3.5 font-semibold text-white hover:bg-espresso-700">

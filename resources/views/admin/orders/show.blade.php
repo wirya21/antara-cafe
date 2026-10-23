@@ -5,7 +5,7 @@
 @section('content')
     @php $cost = $order->items->sum(fn ($i) => $i->cost * $i->quantity); @endphp
     <div class="grid max-w-5xl gap-6 lg:grid-cols-[1fr_320px]">
-        <div class="card p-6">
+        <div class="card p-4 sm:p-6">
             <table class="w-full text-sm">
                 <thead class="border-b border-espresso-100 text-left text-espresso-600">
                     <tr>

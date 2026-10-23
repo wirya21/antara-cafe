@@ -5,7 +5,7 @@
 @section('content')
     <form method="POST"
           action="{{ $category->exists ? route('admin.categories.update', $category) : route('admin.categories.store') }}"
-          class="card max-w-xl space-y-4 p-6">
+          class="card max-w-xl space-y-4 p-4 sm:p-6">
         @csrf
         @if ($category->exists) @method('PUT') @endif
 

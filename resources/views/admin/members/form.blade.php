@@ -3,7 +3,7 @@
 @section('title', 'Ubah member')
 
 @section('content')
-    <form method="POST" action="{{ route('admin.members.update', $member) }}" class="card max-w-xl space-y-4 p-6">
+    <form method="POST" action="{{ route('admin.members.update', $member) }}" class="card max-w-xl space-y-4 p-4 sm:p-6">
         @csrf @method('PUT')
         <div>
             <label for="name" class="label">Nama</label>
