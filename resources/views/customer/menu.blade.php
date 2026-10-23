@@ -287,6 +287,72 @@
         </form>
     </aside>
 
+    {{-- Kartu promo saat pertama membuka menu (sekali per kunjungan) --}}
+    @if ($popup)
+        <div x-data="{
+                show: false,
+                copied: false,
+                init() {
+                    let seen = null;
+                    try { seen = sessionStorage.getItem('antara-promo') } catch (e) {}
+                    if (seen !== @js($popup['key'])) setTimeout(() => this.show = true, 600);
+                },
+                close() {
+                    this.show = false;
+                    try { sessionStorage.setItem('antara-promo', @js($popup['key'])) } catch (e) {}
+                },
+             }"
+             x-show="show" x-cloak @keydown.escape.window="close()"
+             class="fixed inset-0 z-[70] flex items-end justify-center p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="promo-title">
+            <div x-show="show" x-transition.opacity class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="close()"></div>
+            <div x-show="show" x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="translate-y-8 scale-95 opacity-0" x-transition:enter-end="translate-y-0 scale-100 opacity-100"
+                 class="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
+                <div class="relative {{ $popup['image'] ? 'aspect-[4/3]' : 'py-10' }} overflow-hidden bg-gradient-to-br from-espresso-800 via-espresso-700 to-amber-600">
+                    @if ($popup['image'])
+                        <img src="{{ $popup['image'] }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    @else
+                        <div class="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-amber-300/30 blur-2xl"></div>
+                        <p class="relative text-center text-6xl drop-shadow-lg">🎁</p>
+                    @endif
+                    <span class="absolute top-4 left-4 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold tracking-wide text-espresso-900 uppercase shadow">Promo</span>
+                    <button type="button" @click="close()" class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-espresso-900 shadow" aria-label="Tutup promo">✕</button>
+                </div>
+                <div class="p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-center">
+                    <h2 id="promo-title" class="font-display text-2xl leading-tight font-semibold">{{ $popup['title'] }}</h2>
+                    @if ($popup['description'])
+                        <p class="mt-2 text-sm text-espresso-600">{{ $popup['description'] }}</p>
+                    @endif
+                    @if ($popup['summary'])
+                        <p class="mt-3 inline-block rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">{{ $popup['summary'] }}</p>
+                    @endif
+
+                    @if ($popup['voucher'])
+                        <div class="mt-4 flex items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-espresso-200 bg-espresso-50 px-4 py-3">
+                            <div class="text-left">
+                                <p class="text-[11px] tracking-widest text-espresso-500 uppercase">Kode voucher</p>
+                                <p class="font-display text-xl font-semibold tracking-wider">{{ $popup['voucher'] }}</p>
+                            </div>
+                            <button type="button" class="rounded-full bg-espresso-800 px-4 py-2 text-sm font-semibold text-white"
+                                    @click="voucherCode = @js($popup['voucher']); applyVoucher(); copied = true; navigator.clipboard?.writeText(@js($popup['voucher'])).catch(() => {})"
+                                    x-text="copied ? 'Terpasang ✓' : 'Pakai kode'">Pakai kode</button>
+                        </div>
+                    @elseif ($popup['summary'])
+                        <p class="mt-3 text-xs text-espresso-500">Diskon otomatis terpasang di keranjang Anda.</p>
+                    @endif
+
+                    @if ($popup['until'])
+                        <p class="mt-3 text-xs text-espresso-500">Berlaku sampai {{ $popup['until'] }}</p>
+                    @endif
+
+                    <button type="button" @click="close()" class="mt-5 w-full rounded-2xl bg-espresso-800 py-3.5 font-semibold text-white shadow-lg shadow-espresso-900/20 transition hover:bg-espresso-700">
+                        Lihat menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Detail produk --}}
     <div x-show="detail" x-cloak class="fixed inset-0 z-[60] flex items-end justify-center sm:items-center" @keydown.escape.window="detail = null">
         <div x-show="detail" x-transition.opacity class="absolute inset-0 bg-black/60" @click="detail = null"></div>

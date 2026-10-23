@@ -90,7 +90,7 @@
                                     <div x-data="{ copied: false }" class="flex items-center justify-between gap-3 rounded-xl bg-espresso-50 px-4 py-3">
                                         <span class="text-sm font-semibold">{{ $account }}</span>
                                         <button type="button" class="shrink-0 text-xs font-semibold text-espresso-700 underline"
-                                                @click="navigator.clipboard?.writeText(@js(preg_replace('/\D/', '', $account) ?: $account)); copied = true; setTimeout(() => copied = false, 1500)"
+                                                @click="navigator.clipboard?.writeText(@js(preg_replace('/\D/', '', $account) ?: $account)).catch(() => {}); copied = true; setTimeout(() => copied = false, 1500)"
                                                 x-text="copied ? 'Tersalin ✓' : 'Salin'">Salin</button>
                                     </div>
                                 @endforeach

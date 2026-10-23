@@ -86,9 +86,11 @@ class PromotionController extends Controller
         ]);
 
         unset($data['image']);
+        $data['discount_type'] ??= null;
         $data['discount_value'] = $data['discount_type'] ? (int) ($data['discount_value'] ?? 0) : 0;
         $data['min_purchase'] = (int) ($data['min_purchase'] ?? 0);
         $data['is_active'] = $request->boolean('is_active');
+        $data['show_popup'] = $request->boolean('show_popup');
 
         return $data;
     }

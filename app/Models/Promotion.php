@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['title', 'description', 'image_path', 'discount_type', 'discount_value', 'voucher_code', 'min_purchase', 'starts_at', 'ends_at', 'is_active'])]
+#[Fillable(['title', 'description', 'image_path', 'discount_type', 'discount_value', 'voucher_code', 'min_purchase', 'starts_at', 'ends_at', 'is_active', 'show_popup'])]
 class Promotion extends Model
 {
     protected function casts(): array
@@ -17,6 +17,7 @@ class Promotion extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_active' => 'boolean',
+            'show_popup' => 'boolean',
         ];
     }
 

@@ -61,6 +61,11 @@
             <label class="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $promotion->is_active))> Aktif
             </label>
+            <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="show_popup" value="1" class="mt-0.5" @checked(old('show_popup', $promotion->show_popup))>
+                <span>Tampilkan sebagai <b>kartu pop-up</b> saat pelanggan membuka menu
+                    <span class="block text-xs text-espresso-600">Jika ada beberapa, yang terakhir diubah yang tampil. Muncul sekali per kunjungan.</span></span>
+            </label>
 
             <div class="flex gap-2">
                 <button class="btn-primary">Simpan</button>

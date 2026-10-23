@@ -131,4 +131,29 @@ class PromotionTest extends TestCase
         $this->assertTrue(Order::first()->member->is($member));
         $this->get(route('cashier.receipt', Order::first()))->assertSee('Poin: +11');
     }
+
+    public function test_popup_promo_shows_on_menu_only_when_flagged_and_running(): void
+    {
+        $this->get('/menu')->assertOk()->assertDontSee('Kode voucher</p>', false);
+
+        Promotion::create(['title' => 'Gajian Ceria', 'discount_type' => 'percent', 'discount_value' => 20, 'voucher_code' => 'GAJIAN', 'is_active' => true, 'show_popup' => false]);
+        $this->get('/menu')->assertDontSee('promo-title', false);
+
+        $promo = Promotion::create(['title' => 'Happy Hour', 'description' => 'Semua kopi lebih hemat', 'discount_type' => 'percent', 'discount_value' => 15, 'voucher_code' => 'HAPPY', 'is_active' => true, 'show_popup' => true]);
+        $this->get('/menu')->assertSee('promo-title', false)->assertSee('Happy Hour')->assertSee('HAPPY')->assertSee('Diskon 15%');
+
+        $promo->update(['ends_at' => now()->subDay()]);
+        $this->get('/menu')->assertDontSee('promo-title', false);
+    }
+
+    public function test_admin_can_flag_promo_as_popup(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->post(route('admin.promotions.store'), [
+            'title' => 'Buka Baru',
+            'is_active' => '1',
+            'show_popup' => '1',
+        ])->assertRedirect(route('admin.promotions.index'));
+
+        $this->assertTrue(Promotion::firstOrFail()->show_popup);
+    }
 }

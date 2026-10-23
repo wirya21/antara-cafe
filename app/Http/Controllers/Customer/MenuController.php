@@ -50,7 +50,24 @@ class MenuController extends Controller
                 ->map(fn ($p) => $this->promoPayload($p))->values(),
             'table' => $request->string('meja')->limit(10, '')->toString(),
             'paymentMethods' => Order::availableSelfPaymentMethods(),
+            'popup' => $this->popupPayload(),
         ]);
+    }
+
+    /** Promo yang dipilih admin untuk tampil sebagai kartu saat menu dibuka. */
+    private function popupPayload(): ?array
+    {
+        $promo = Promotion::running()->where('show_popup', true)->latest('updated_at')->first();
+
+        return $promo ? [
+            'key' => $promo->id.'-'.$promo->updated_at->timestamp,
+            'title' => $promo->title,
+            'description' => $promo->description,
+            'image' => $promo->imageUrl(),
+            'summary' => $promo->discount_type ? $promo->summary() : null,
+            'voucher' => $promo->voucher_code,
+            'until' => $promo->ends_at?->translatedFormat('d F Y'),
+        ] : null;
     }
 
     public function store(Request $request, PlaceOrder $placeOrder, WhatsApp $whatsApp): RedirectResponse
