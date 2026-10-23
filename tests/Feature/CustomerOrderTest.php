@@ -73,4 +73,11 @@ class CustomerOrderTest extends TestCase
     {
         $this->post('/menu/pesan', ['items' => []])->assertSessionHasErrors(['customer_name', 'items']);
     }
+
+    public function test_tv_display_is_public_and_lists_menu(): void
+    {
+        $this->latte->update(['is_featured' => true]);
+
+        $this->get('/layar')->assertOk()->assertSee('Caffe Latte')->assertSee('28k')->assertSee('Scan &amp; pesan dari meja', false);
+    }
 }

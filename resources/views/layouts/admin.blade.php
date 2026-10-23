@@ -15,6 +15,7 @@
             ['admin.users.index', 'Akun', 'admin.users.*'],
             ['cashier.index', 'Buka kasir ↗', 'cashier.*'],
             ['menu', 'Lihat menu pelanggan ↗', 'menu'],
+            ['display', 'Buka layar TV ↗', 'display'],
         ];
     @endphp
     <div class="flex min-h-screen flex-col md:flex-row">
