@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\RecipeController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
@@ -60,6 +61,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('member', MemberController::class)->only(['index', 'edit', 'update', 'destroy'])->names('members');
 
     Route::resource('stok', IngredientController::class)->names('ingredients')->parameters(['stok' => 'ingredient']);
+    Route::get('resep', [RecipeController::class, 'index'])->name('recipes.index');
     Route::post('stok/{ingredient}/catat', [IngredientController::class, 'move'])->name('ingredients.move');
 
     Route::get('pengaturan', [SettingController::class, 'edit'])->name('settings.edit');
@@ -71,6 +73,7 @@ Route::middleware(['auth', 'staff'])->prefix('kasir')->name('cashier.')->group(f
     Route::get('/', [CashierController::class, 'index'])->name('index');
     Route::get('/pesanan-masuk', [CashierController::class, 'pending'])->name('pending');
     Route::get('/notifikasi', [CashierController::class, 'alerts'])->name('alerts');
+    Route::post('/mode-ramai', [CashierController::class, 'toggleBusy'])->name('busy');
     Route::post('/pesanan/{order}/selesai', [CashierController::class, 'complete'])->name('complete');
     Route::get('/pesanan/{order}/bukti', [CashierController::class, 'proof'])->name('proof');
     Route::post('/pesanan', [CashierController::class, 'store'])->name('store');

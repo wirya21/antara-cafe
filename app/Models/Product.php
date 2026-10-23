@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Costing;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -9,13 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'image_path', 'is_available', 'is_featured', 'sort_order'])]
+#[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'prep_minutes', 'manual_cost', 'image_path', 'is_available', 'is_featured', 'sort_order'])]
 class Product extends Model
 {
     protected function casts(): array
     {
         return [
             'price' => 'integer',
+            'prep_minutes' => 'integer',
+            'manual_cost' => 'integer',
             'is_available' => 'boolean',
             'is_featured' => 'boolean',
         ];
@@ -31,10 +34,20 @@ class Product extends Model
         return $this->belongsToMany(Ingredient::class)->withPivot('quantity');
     }
 
-    /** HPP perkiraan per porsi dari resep dan harga bahan saat ini. */
+    /** HPP bahan per porsi: dari resep, atau harga pokok manual bila menu tidak punya resep. */
     public function estimatedCost(): int
     {
+        if ($this->ingredients->isEmpty()) {
+            return (int) $this->manual_cost;
+        }
+
         return (int) round($this->ingredients->sum(fn ($i) => $i->pivot->quantity * $i->cost_per_unit));
+    }
+
+    /** Harga pokok lengkap: bahan + beban operasional per porsi. */
+    public function fullCost(): int
+    {
+        return $this->estimatedCost() + Costing::overheadPerServing();
     }
 
     /** Batas "hampir habis" untuk label "Sisa N" di menu. */

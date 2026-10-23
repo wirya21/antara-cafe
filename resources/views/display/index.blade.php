@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Layar Menu · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 <body class="h-screen overflow-hidden bg-espresso-900 font-sans text-espresso-50 antialiased">
 <div x-data="displayApp(@js($slides), @js($menuUrl))" class="grid h-full grid-cols-[1.6fr_1fr] gap-[1.5vw] p-[1.5vw]">

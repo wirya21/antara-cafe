@@ -43,7 +43,7 @@
         Periode {{ $report->from->translatedFormat('j M Y') }} – {{ $report->to->translatedFormat('j M Y') }} · hanya transaksi yang sudah dibayar
     </p>
 
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <div class="card p-5">
             <p class="text-sm text-espresso-600">Pendapatan bersih</p>
             <p class="mt-1 text-2xl font-semibold">{{ $rp($totals['net']) }}</p>
@@ -53,6 +53,17 @@
             <p class="text-sm text-espresso-600">Laba kotor</p>
             <p class="mt-1 text-2xl font-semibold">{{ $rp($totals['profit']) }}</p>
             <p class="mt-1 text-xs text-espresso-500">HPP {{ $rp($totals['cost']) }} · margin {{ $margin }}%</p>
+        </div>
+        <div class="card p-5 {{ $totals['profit'] - $overhead < 0 ? 'ring-2 ring-red-200' : '' }}">
+            <p class="text-sm text-espresso-600">Laba bersih (perkiraan)</p>
+            <p class="mt-1 text-2xl font-semibold {{ $totals['profit'] - $overhead < 0 ? 'text-red-700' : '' }}">{{ $rp($totals['profit'] - $overhead) }}</p>
+            <p class="mt-1 text-xs text-espresso-500">
+                @if ($overhead)
+                    Laba kotor − biaya operasional {{ $rp($overhead) }} ({{ $periodDays }} hari)
+                @else
+                    <a href="{{ route('admin.settings.edit') }}" class="underline">Isi biaya operasional</a> untuk menghitung gaji, listrik, dll.
+                @endif
+            </p>
         </div>
         <div class="card p-5">
             <p class="text-sm text-espresso-600">Transaksi</p>

@@ -6,6 +6,8 @@ use App\Actions\PlaceOrder;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Setting;
+use App\Support\Busy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +45,7 @@ class CashierController extends Controller
             'pending' => $this->pendingOrders(),
             'processing' => $this->processingOrders(),
             'paymentMethods' => Order::PAYMENT_METHODS,
+            'busy' => Busy::on(),
         ]);
     }
 
@@ -68,6 +71,16 @@ class CashierController extends Controller
         $order->markCompleted();
 
         return $this->backTo($request, $order)->with('status', "Pesanan {$order->code} ditandai siap.");
+    }
+
+    /** Nyalakan/matikan mode ramai langsung dari layar kasir. */
+    public function toggleBusy(): RedirectResponse
+    {
+        Setting::put('busy_mode', Busy::on() ? null : '1');
+
+        return redirect()->route('cashier.index')->with('status', Busy::on()
+            ? 'Mode ramai aktif. Pelanggan diberi tahu pesanan mungkin sedikit terlambat.'
+            : 'Mode ramai dimatikan.');
     }
 
     /** Aksi ini dipakai dari halaman kasir dan dari detail transaksi admin. */
@@ -159,7 +172,7 @@ class CashierController extends Controller
     {
         return Order::where('status', 'paid')->whereNull('completed_at')
             ->where('paid_at', '>=', now()->subDay())
-            ->with('items')->oldest('paid_at')->get()
+            ->with('items.product')->oldest('paid_at')->get()
             ->map(fn (Order $order) => $this->orderPayload($order))->all();
     }
 
@@ -174,6 +187,7 @@ class CashierController extends Controller
             'time' => ($order->paid_at ?? $order->created_at)->format('H:i'),
             // Waktu tunggu dihitung sejak pesanan masuk (belum bayar) atau sejak dibayar (sedang dibuat).
             'since' => ($order->status === 'paid' ? $order->paid_at : $order->created_at)->toIso8601String(),
+            'eta' => $order->status === 'paid' ? $order->estimatedMinutes() : null,
             'payment_method' => $order->payment_method,
             'payment_label' => Order::PAYMENT_METHODS[$order->payment_method] ?? null,
             'proof_url' => $order->payment_proof_path ? route('cashier.proof', $order) : null,

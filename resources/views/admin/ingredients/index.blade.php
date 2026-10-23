@@ -28,14 +28,24 @@
         <a href="{{ route('admin.ingredients.create') }}" class="btn-primary">+ Tambah bahan</a>
     </div>
 
-    <div class="card overflow-x-auto" x-data="{ open: null, type: 'purchase' }">
+    <details class="card mb-4 p-4 text-sm" open>
+        <summary class="cursor-pointer font-semibold">Cara membaca tabel ini</summary>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-espresso-700">
+            <li><b>Stok sekarang</b>: jumlah bahan yang ada. Berkurang otomatis setiap menu yang memakainya terjual.</li>
+            <li><b>Batas peringatan</b>: bila stok sama atau di bawah angka ini, bahan ditandai <i>menipis</i> supaya Anda ingat belanja.</li>
+            <li><b>Harga per satuan</b>: harga rata-rata untuk 1 satuan bahan (mis. per 1 gram atau per 1 ml), dihitung otomatis dari pembelian Anda. Dipakai untuk menghitung HPP menu.</li>
+            <li><b>Dipakai di</b>: menu yang membutuhkan bahan ini. Lihat semuanya sekaligus di <a href="{{ route('admin.recipes.index') }}" class="font-semibold underline">Resep &amp; stok</a>.</li>
+        </ul>
+    </details>
+
+    <div class="card overflow-x-auto" x-data="{ open: null }">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-espresso-100 text-espresso-600">
                 <tr>
                     <th class="px-4 py-3 font-medium">Bahan</th>
-                    <th class="px-4 py-3 text-right font-medium">Stok</th>
-                    <th class="px-4 py-3 text-right font-medium">Minimum</th>
-                    <th class="px-4 py-3 text-right font-medium">Harga / satuan</th>
+                    <th class="px-4 py-3 text-right font-medium">Stok sekarang</th>
+                    <th class="px-4 py-3 text-right font-medium">Batas peringatan</th>
+                    <th class="px-4 py-3 text-right font-medium">Harga per satuan</th>
                     <th class="px-4 py-3 font-medium">Dipakai di</th>
                     <th class="px-4 py-3"></th>
                 </tr>
@@ -51,40 +61,17 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-right font-semibold tabular-nums"><x-qty :value="$ingredient->stock" /> {{ $ingredient->unit }}</td>
-                        <td class="px-4 py-3 text-right text-espresso-600 tabular-nums"><x-qty :value="$ingredient->min_stock" /></td>
-                        <td class="px-4 py-3 text-right tabular-nums">Rp{{ number_format($ingredient->cost_per_unit, $ingredient->cost_per_unit < 100 ? 2 : 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-espresso-600">{{ $ingredient->products_count }} menu</td>
+                        <td class="px-4 py-3 text-right text-espresso-600 tabular-nums"><x-qty :value="$ingredient->min_stock" /> {{ $ingredient->unit }}</td>
+                        <td class="px-4 py-3 text-right tabular-nums">Rp{{ number_format($ingredient->cost_per_unit, $ingredient->cost_per_unit < 100 ? 2 : 0, ',', '.') }}<span class="text-espresso-500">/{{ $ingredient->unit }}</span></td>
+                        <td class="px-4 py-3 text-espresso-600">{{ $ingredient->products->pluck('name')->join(', ') ?: '–' }}</td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <button type="button" @click="open = open === {{ $ingredient->id }} ? null : {{ $ingredient->id }}; type = 'purchase'" class="btn-primary py-1">Catat stok</button>
+                            <button type="button" @click="open = open === {{ $ingredient->id }} ? null : {{ $ingredient->id }}" class="btn-primary py-1">Catat stok</button>
                             <a href="{{ route('admin.ingredients.edit', $ingredient) }}" class="btn-ghost py-1">Ubah</a>
                         </td>
                     </tr>
                     <tr x-show="open === {{ $ingredient->id }}" x-cloak>
                         <td colspan="6" class="bg-espresso-50 px-4 py-4">
-                            <form method="POST" action="{{ route('admin.ingredients.move', $ingredient) }}" class="flex flex-wrap items-end gap-3">
-                                @csrf
-                                <div>
-                                    <label class="label">Jenis</label>
-                                    <select name="type" x-model="type" class="input">
-                                        <option value="purchase">Stok masuk (beli)</option>
-                                        <option value="adjustment">Opname (hitung fisik)</option>
-                                        <option value="waste">Terbuang / rusak</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="label" x-text="type === 'adjustment' ? 'Stok fisik sekarang ({{ $ingredient->unit }})' : 'Jumlah ({{ $ingredient->unit }})'"></label>
-                                    <input type="number" step="0.01" min="0" name="quantity" required class="input w-40">
-                                </div>
-                                <div x-show="type === 'purchase'">
-                                    <label class="label">Total harga beli (Rp)</label>
-                                    <input type="number" min="0" name="total_cost" class="input w-40" :required="type === 'purchase'">
-                                </div>
-                                <div class="min-w-48 flex-1">
-                                    <label class="label">Catatan</label>
-                                    <input name="note" maxlength="150" class="input" placeholder="mis. beli di supplier A">
-                                </div>
-                                <button class="btn-primary">Simpan</button>
-                            </form>
+                            <x-stock-move-form :ingredient="$ingredient" />
                         </td>
                     </tr>
                 @empty

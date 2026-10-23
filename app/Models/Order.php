@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Busy;
 use App\Support\Inventory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -125,6 +126,19 @@ class Order extends Model
                 $this->member->save();
             }
         });
+    }
+
+    /**
+     * Perkiraan menit sampai pesanan siap sejak dibayar: menu terlama di pesanan,
+     * ditambah tambahan waktu saat mode ramai aktif. Null bila belum ada perkiraan.
+     */
+    public function estimatedMinutes(): ?int
+    {
+        $this->loadMissing('items.product');
+        $longest = $this->items->max(fn ($item) => $item->product?->prep_minutes);
+        $extra = Busy::extraMinutes();
+
+        return $longest || $extra ? (int) $longest + $extra : null;
     }
 
     public function getRouteKeyName(): string

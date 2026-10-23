@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#2b1b0e">
     <title>Pesanan saya · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 <body class="min-h-screen bg-[#f7f1ea] font-sans text-espresso-900 antialiased">
 <div x-data="orderHistory(@js(route('menu.history.data')))" class="mx-auto max-w-md px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10">

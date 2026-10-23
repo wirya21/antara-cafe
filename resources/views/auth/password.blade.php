@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ganti password · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <x-theme-style />
 </head>
 <body class="flex min-h-screen items-center justify-center bg-espresso-50 px-4 font-sans text-espresso-900 antialiased">
     <form method="POST" action="{{ route('password.update') }}" class="card w-full max-w-sm space-y-4 p-6">

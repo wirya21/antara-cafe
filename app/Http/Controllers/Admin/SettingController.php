@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Support\Busy;
+use App\Support\Costing;
+use App\Support\Theme;
 use App\Support\WhatsApp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +25,13 @@ class SettingController extends Controller
             'whatsappNumbers' => Setting::get('whatsapp_numbers'),
             'hasToken' => filled(Setting::get('fonnte_token')),
             'whatsappReady' => $whatsApp->enabled(),
+            'overheads' => Costing::overheads(),
+            'monthlyServings' => Costing::monthlyServings(),
+            'busy' => Busy::on(),
+            'busyMessage' => Setting::get('busy_message'),
+            'busyExtra' => (int) Setting::get('busy_extra_minutes', '10'),
+            'theme' => Theme::key(),
+            'themeColor' => Theme::color(),
         ]);
     }
 
@@ -34,6 +44,13 @@ class SettingController extends Controller
             'whatsapp_numbers' => ['nullable', 'string', 'max:200', 'regex:/^[0-9+\s,;-]*$/'],
             'fonnte_token' => ['nullable', 'string', 'max:100'],
             'remove_token' => ['nullable', 'boolean'],
+            'overheads' => ['nullable', 'array'],
+            'overheads.*' => ['nullable', 'integer', 'min:0', 'max:1000000000'],
+            'op_monthly_servings' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'busy_message' => ['nullable', 'string', 'max:200'],
+            'busy_extra_minutes' => ['nullable', 'integer', 'min:0', 'max:120'],
+            'theme' => ['nullable', 'string', 'in:custom,'.implode(',', array_keys(Theme::PRESETS))],
+            'theme_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], [
             'whatsapp_numbers.regex' => 'Nomor WhatsApp hanya boleh berisi angka, dipisah koma.',
         ]);
@@ -50,6 +67,18 @@ class SettingController extends Controller
 
         Setting::put('bank_accounts', $data['bank_accounts'] ?? null);
         Setting::put('whatsapp_numbers', $data['whatsapp_numbers'] ?? null);
+
+        foreach (array_keys(Costing::OVERHEADS) as $key) {
+            Setting::put($key, (string) (int) ($data['overheads'][$key] ?? 0));
+        }
+        Setting::put('op_monthly_servings', (string) (int) ($data['op_monthly_servings'] ?? 0));
+
+        Setting::put('busy_mode', $request->boolean('busy_mode') ? '1' : null);
+        Setting::put('busy_message', $data['busy_message'] ?? null);
+        Setting::put('busy_extra_minutes', (string) (int) ($data['busy_extra_minutes'] ?? 0));
+
+        Setting::put('theme', $data['theme'] ?? Theme::DEFAULT);
+        Setting::put('theme_color', $data['theme_color'] ?? null);
 
         // Token tidak pernah ditampilkan lagi; kosong berarti tidak diubah.
         if ($request->boolean('remove_token')) {

@@ -74,10 +74,12 @@ export default (menu, pending, processing, pendingUrl) => ({
         return Math.max(0, Math.floor((this.now - new Date(order.since).getTime()) / 60000));
     },
 
+    /** Merah bila lewat perkiraan waktu siap (atau 15 mnt bila belum ada perkiraan), kuning menjelang batas. */
     waitClass(order) {
         const minutes = this.waited(order);
-        if (minutes >= 15) return 'bg-red-600 text-white';
-        if (minutes >= 10) return 'bg-amber-400 text-espresso-900';
+        const limit = order.eta || 15;
+        if (minutes >= limit) return 'bg-red-600 text-white';
+        if (minutes >= Math.max(1, Math.round(limit * 0.7))) return 'bg-amber-400 text-espresso-900';
         return 'bg-espresso-100 text-espresso-800';
     },
 

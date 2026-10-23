@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\Costing;
 use App\Support\SalesReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -32,6 +33,9 @@ class ReportController extends Controller
             'categories' => $report->byCategory(),
             'topProducts' => $report->topProducts(),
             'preset' => $preset,
+            // Biaya operasional bulanan dibagi rata per hari periode laporan.
+            'overhead' => Costing::overheadForDays(max(1, ceil($from->diffInDays($to)))),
+            'periodDays' => (int) max(1, ceil($from->diffInDays($to))),
         ]);
     }
 
