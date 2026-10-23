@@ -30,9 +30,13 @@
                     <span class="grid h-10 w-10 place-items-center rounded-full bg-espresso-50 text-xl">☕</span>
                     <span class="font-display text-xl font-semibold tracking-tight">Antara Cafe</span>
                 </div>
-                <template x-if="tableNumber">
-                    <span class="rounded-full border border-espresso-50/30 bg-espresso-50/10 px-3 py-1 text-sm backdrop-blur">Meja <b x-text="tableNumber"></b></span>
-                </template>
+                <div class="flex items-center gap-2">
+                    <template x-if="tableNumber">
+                        <span class="rounded-full border border-espresso-50/30 bg-espresso-50/10 px-3 py-1 text-sm backdrop-blur">Meja <b x-text="tableNumber"></b></span>
+                    </template>
+                    <a href="{{ route('menu.history') }}" x-show="hasHistory" x-cloak
+                       class="flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-sm font-semibold text-espresso-900 shadow">🧾 Pesanan saya</a>
+                </div>
             </div>
 
             <h1 class="mt-6 max-w-md font-display text-3xl leading-tight font-semibold sm:text-4xl">

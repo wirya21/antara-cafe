@@ -10,9 +10,11 @@
         hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
         table { width: 100%; border-collapse: collapse; } td { vertical-align: top; }
         .big { font-size: 14px; font-weight: bold; }
+        .qr { display: block; width: 30mm; height: 30mm; margin: 4px auto 0; }
     </style>
+    @vite('resources/js/receipt.js')
 </head>
-<body onload="window.print()">
+<body data-track-url="{{ route('menu.order', $order) }}">
     <div class="c big">ANTARA CAFE</div>
     <div class="c">antara.kafehub.id</div>
     <hr>
@@ -41,6 +43,9 @@
         <div>Member: {{ $order->member->name }}</div>
         <div>Poin: +{{ intdiv($order->total, \App\Models\Member::RUPIAH_PER_POINT) }} (total {{ $order->member->points }})</div>
     @endif
+    <hr>
+    <div class="c">Scan untuk cek status pesanan:</div>
+    <img class="qr" id="track-qr" alt="">
     <hr>
     <div class="c">Terima kasih sudah mampir!</div>
 </body>

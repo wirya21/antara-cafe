@@ -125,7 +125,8 @@ class MenuController extends Controller
 
     public function show(Order $order): View
     {
-        abort_unless($order->source === 'self_order', 404);
+        // Pesanan kasir juga bisa dilacak lewat QR di struk, asal sudah dibayar.
+        abort_unless($order->source === 'self_order' || $order->status === 'paid', 404);
 
         $qris = Setting::get('qris_image_path');
 
@@ -140,9 +141,40 @@ class MenuController extends Controller
     /** Status terbaru untuk halaman pesanan pelanggan (dicek berkala). */
     public function status(Order $order): JsonResponse
     {
-        abort_unless($order->source === 'self_order', 404);
+        abort_unless($order->source === 'self_order' || $order->status === 'paid', 404);
 
-        return response()->json(['stage' => $order->stage(), 'has_proof' => filled($order->payment_proof_path)]);
+        return response()->json([
+            'stage' => $order->stage(),
+            'has_proof' => filled($order->payment_proof_path),
+        ]);
+    }
+
+    /** Riwayat pesanan di perangkat ini, tanpa harus jadi member. Kodenya disimpan di HP pelanggan. */
+    public function history(): View
+    {
+        return view('customer.history');
+    }
+
+    public function historyData(Request $request): JsonResponse
+    {
+        $codes = collect(explode(',', (string) $request->query('kode')))
+            ->map(fn ($code) => strtoupper(trim($code)))
+            ->filter(fn ($code) => preg_match('/^[A-Z]-[A-Z0-9]{4,8}$/', $code))
+            ->unique()->take(30);
+
+        $orders = Order::whereIn('code', $codes)->with('items')->latest('id')->get()
+            ->filter(fn (Order $order) => $order->source === 'self_order' || $order->status === 'paid')
+            ->map(fn (Order $order) => [
+                'code' => $order->code,
+                'stage' => $order->stage(),
+                'stage_label' => Order::CUSTOMER_STAGES[$order->stage()],
+                'total' => $order->total,
+                'date' => $order->created_at->translatedFormat('d M Y, H:i'),
+                'items' => $order->items->map(fn ($item) => $item->quantity.'× '.$item->product_name)->join(', '),
+                'url' => route('menu.order', $order),
+            ])->values();
+
+        return response()->json(['orders' => $orders]);
     }
 
     public function changeMethod(Request $request, Order $order): RedirectResponse

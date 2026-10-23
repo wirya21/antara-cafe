@@ -14,26 +14,28 @@
 <body class="min-h-screen bg-espresso-900 bg-[radial-gradient(circle_at_top,var(--color-espresso-700),var(--color-espresso-900)_55%)] px-4 pt-[max(2rem,env(safe-area-inset-top))] pb-10 font-sans text-espresso-900 antialiased">
     <script>try { localStorage.removeItem('antara-cart'); } catch (e) {}</script>
 
-    {{-- Muat ulang otomatis saat staf mengonfirmasi atau menyelesaikan pesanan. --}}
+    {{-- Cek status berkala; bunyi, getar, dan notifikasi saat pembayaran dikonfirmasi atau pesanan siap. --}}
     <div class="mx-auto max-w-md"
-         @if (in_array($stage, ['pending', 'processing']))
-             x-data="{ stage: @js($stage), proof: @js(filled($order->payment_proof_path)) }"
-             x-init="setInterval(async () => {
-                 try {
-                     const r = await fetch(@js(route('menu.order.status', $order)), { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
-                     if (!r.ok) return;
-                     const d = await r.json();
-                     if (d.stage !== stage || d.has_proof !== proof) window.location.reload();
-                 } catch (e) {}
-             }, 8000)"
-         @endif>
+         x-data="orderTracker(@js([
+             'code' => $order->code,
+             'stage' => $stage,
+             'hasProof' => filled($order->payment_proof_path),
+             'since' => ($order->paid_at ?? $order->created_at)->toIso8601String(),
+             'statusUrl' => route('menu.order.status', $order),
+         ]))">
+
+        {{-- Kabar terbaru muncul di atas sebelum halaman dimuat ulang. --}}
+        <div x-show="flash" x-cloak x-transition class="fixed inset-x-4 top-[max(1rem,env(safe-area-inset-top))] z-50 mx-auto max-w-md rounded-2xl bg-green-600 p-4 text-center text-white shadow-2xl">
+            <p class="font-display text-xl font-semibold" x-text="flash?.title"></p>
+            <p class="text-sm" x-text="flash?.body"></p>
+        </div>
 
         <div class="text-center text-espresso-50">
             <div class="mx-auto grid h-20 w-20 place-items-center rounded-full bg-espresso-50 text-4xl shadow-xl">
                 {{ ['pending' => '🧾', 'processing' => '👨‍🍳', 'completed' => '✅', 'cancelled' => '✖️'][$stage] }}
             </div>
             <h1 class="mt-5 font-display text-3xl font-semibold">
-                {{ ['pending' => 'Selesaikan pembayaran', 'processing' => 'Pembayaran diterima!', 'completed' => 'Pesanan selesai', 'cancelled' => 'Pesanan dibatalkan'][$stage] }}
+                {{ ['pending' => 'Selesaikan pembayaran', 'processing' => 'Pesanan sedang dibuat', 'completed' => 'Pesanan siap! 🎉', 'cancelled' => 'Pesanan dibatalkan'][$stage] }}
             </h1>
             <p class="mx-auto mt-2 max-w-xs text-espresso-200">
                 @switch($stage)
@@ -46,12 +48,41 @@
                             Bayar sesuai total di bawah, lalu unggah bukti pembayaran. Pesanan dibuat setelah dikonfirmasi.
                         @endif
                         @break
-                    @case('processing') Pesanan Anda sedang dibuat. Kami panggil nama Anda saat siap. @break
-                    @case('completed') Terima kasih sudah mampir ke Antara Cafe! @break
+                    @case('processing') Pembayaran sudah diterima. Biarkan halaman ini terbuka, HP Anda akan berbunyi saat pesanan siap. @break
+                    @case('completed')
+                        @if ($order->table_number)
+                            Pesanan untuk meja {{ $order->table_number }} sudah siap. Selamat menikmati!
+                        @else
+                            Silakan ambil di kasir dengan menyebut kode {{ $order->code }}. Terima kasih!
+                        @endif
+                        @break
                     @default Silakan hubungi kasir bila ada pertanyaan.
                 @endswitch
             </p>
         </div>
+
+        @if (in_array($stage, ['pending', 'processing', 'completed']))
+            @php $step = ['pending' => 0, 'processing' => 1, 'completed' => 2][$stage]; @endphp
+            <ol class="mt-6 grid grid-cols-3 gap-2 text-center text-xs font-semibold">
+                @foreach (['Bayar', 'Dibuat', 'Siap'] as $i => $label)
+                    <li class="space-y-1.5">
+                        <div class="h-1.5 rounded-full {{ $i < $step || $step === 2 ? 'bg-green-500' : ($i === $step ? 'animate-pulse bg-amber-400' : 'bg-espresso-50/20') }}"></div>
+                        <span class="{{ $i <= $step ? 'text-espresso-50' : 'text-espresso-50/40' }}">{{ $label }}</span>
+                    </li>
+                @endforeach
+            </ol>
+        @endif
+
+        @if (in_array($stage, ['pending', 'processing']))
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
+                <span class="rounded-full bg-espresso-50/10 px-3 py-1.5 font-semibold text-espresso-50 tabular-nums">
+                    ⏱ <span x-text="waited">0</span> mnt {{ $stage === 'processing' ? 'sejak dibayar' : 'sejak memesan' }}
+                </span>
+                <button type="button" x-show="permission === 'default'" @click="enableAlerts()"
+                        class="rounded-full bg-amber-400 px-3 py-1.5 font-semibold text-espresso-900 shadow">🔔 Kabari saya saat siap</button>
+                <span x-show="permission === 'granted'" x-cloak class="rounded-full bg-green-600/90 px-3 py-1.5 font-semibold text-white">🔔 Notifikasi aktif</span>
+            </div>
+        @endif
 
         @if (session('status'))
             <div class="mt-6 rounded-2xl bg-green-600 px-4 py-3 text-center text-sm font-semibold text-white">{{ session('status') }}</div>
@@ -148,7 +179,7 @@
                 </p>
                 <span class="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold
                     {{ ['pending' => 'bg-amber-100 text-amber-800', 'processing' => 'bg-blue-100 text-blue-800', 'completed' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-gray-100 text-gray-600'][$stage] }}">
-                    {{ \App\Models\Order::STAGES[$stage] }}
+                    {{ \App\Models\Order::CUSTOMER_STAGES[$stage] }}
                 </span>
             </div>
 
@@ -171,7 +202,7 @@
             </ul>
         </div>
 
-        <p class="mt-4 text-center text-xs text-espresso-300">Simpan halaman ini untuk memantau status pesanan Anda.</p>
+        <p class="mt-4 text-center text-xs text-espresso-300">Pesanan ini tersimpan di HP Anda. Buka lagi kapan saja lewat <a href="{{ route('menu.history') }}" class="font-semibold underline">Pesanan saya</a>.</p>
 
         <a href="{{ route('menu', array_filter(['meja' => $order->table_number])) }}" class="mt-4 block rounded-2xl border border-espresso-50/30 py-3.5 text-center font-semibold text-espresso-50 hover:bg-espresso-50/10">
             Pesan lagi

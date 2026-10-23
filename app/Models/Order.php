@@ -65,6 +65,14 @@ class Order extends Model
         };
     }
 
+    /** Label yang dilihat pelanggan. */
+    public const CUSTOMER_STAGES = [
+        'pending' => 'Menunggu pembayaran',
+        'processing' => 'Sedang dibuat',
+        'completed' => 'Siap · selesai',
+        'cancelled' => 'Dibatalkan',
+    ];
+
     public const STAGES = [
         'pending' => 'Menunggu pembayaran',
         'processing' => 'Dibayar · sedang dibuat',
@@ -81,7 +89,9 @@ class Order extends Model
     {
         abort_unless($this->status === 'paid', 409, 'Pesanan belum dibayar.');
 
-        $this->update(['completed_at' => now()]);
+        if ($this->completed_at === null) {
+            $this->update(['completed_at' => now()]);
+        }
     }
 
     public function markPaid(string $paymentMethod, User $cashier): void

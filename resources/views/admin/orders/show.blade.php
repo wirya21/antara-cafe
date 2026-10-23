@@ -96,9 +96,10 @@
             @if ($order->stage() === 'processing')
                 <form method="POST" action="{{ route('cashier.complete', $order) }}" class="card space-y-2 p-5">
                     @csrf
-                        <input type="hidden" name="kembali" value="admin">
-                    <p class="text-sm font-semibold">Sedang dibuat</p>
-                    <button class="btn-primary w-full py-2.5">Tandai selesai / sudah diserahkan</button>
+                    <input type="hidden" name="kembali" value="admin">
+                    <p class="text-sm font-semibold">Sedang dibuat · ⏱ {{ (int) $order->paid_at->diffInMinutes(now()) }} mnt sejak dibayar</p>
+                    <x-swipe-confirm label="Geser jika pesanan siap" />
+                    <p class="text-xs text-espresso-600">Pelanggan langsung mendapat notifikasi di HP-nya.</p>
                 </form>
             @endif
 

@@ -1,4 +1,8 @@
 {
+  "_browser-DwDA2okr.js": {
+    "file": "assets/browser-DwDA2okr.js",
+    "name": "browser"
+  },
   "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2": {
     "file": "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
     "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2"
@@ -28,7 +32,7 @@
     "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DqpATa1V.css",
+    "file": "assets/app-CIdrVvBo.css",
     "name": "app",
     "names": [
       "app.css"
@@ -46,9 +50,21 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-D6ytF3Ip.js",
+    "file": "assets/app-DohXK3R7.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_browser-DwDA2okr.js"
+    ]
+  },
+  "resources/js/receipt.js": {
+    "file": "assets/receipt-C70Rv3w9.js",
+    "name": "receipt",
+    "src": "resources/js/receipt.js",
+    "isEntry": true,
+    "imports": [
+      "_browser-DwDA2okr.js"
+    ]
   }
 }
