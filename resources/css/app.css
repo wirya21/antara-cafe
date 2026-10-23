@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-espresso-50: #faf6f1;
+    --color-espresso-100: #f1e7da;
+    --color-espresso-200: #e2cdb3;
+    --color-espresso-500: #a8743f;
+    --color-espresso-600: #8c5a2b;
+    --color-espresso-700: #6f4520;
+    --color-espresso-800: #4a2e17;
+    --color-espresso-900: #2b1b0e;
+}
+
+@utility input {
+    @apply w-full rounded-lg border border-espresso-200 bg-white px-3 py-2 text-sm text-espresso-900 shadow-sm focus:border-espresso-500 focus:ring-2 focus:ring-espresso-200 focus:outline-none;
+}
+@utility label {
+    @apply mb-1 block text-sm font-medium text-espresso-800;
+}
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition;
+}
+@utility btn-primary {
+    @apply btn bg-espresso-700 text-white hover:bg-espresso-800;
+}
+@utility btn-ghost {
+    @apply btn border border-espresso-200 bg-white text-espresso-800 hover:bg-espresso-50;
+}
+@utility btn-danger {
+    @apply btn text-red-700 hover:bg-red-50;
+}
+@utility card {
+    @apply rounded-2xl border border-espresso-100 bg-white shadow-sm;
+}
