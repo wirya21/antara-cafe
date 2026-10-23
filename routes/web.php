@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IngredientController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\OrderBoardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
@@ -16,9 +17,11 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Cashier\CashierController;
 use App\Http\Controllers\Customer\DisplayController;
 use App\Http\Controllers\Customer\MenuController;
+use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/menu');
+Route::get('/', [LandingController::class, 'home']);
+Route::get('/kafehub', [LandingController::class, 'show'])->name('kafehub');
 
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::post('/menu/pesan', [MenuController::class, 'store'])->middleware('throttle:10,1')->name('menu.store');
@@ -51,6 +54,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('laporan', [ReportController::class, 'index'])->name('reports.index');
     Route::get('laporan/export', [ReportController::class, 'export'])->name('reports.export');
+
+    Route::get('pesanan', [OrderBoardController::class, 'index'])->name('board.index');
+    Route::get('pesanan/jumlah', [OrderBoardController::class, 'counts'])->name('board.counts');
 
     Route::get('transaksi', [OrderController::class, 'index'])->name('orders.index');
     Route::get('transaksi/export', [OrderController::class, 'export'])->name('orders.export');

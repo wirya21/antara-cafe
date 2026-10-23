@@ -55,6 +55,11 @@ class MenuController extends Controller
             'paymentMethods' => Order::availableSelfPaymentMethods(),
             'popup' => $this->popupPayload(),
             'busyMessage' => Busy::message(),
+            'hero' => [
+                'image' => ($path = Setting::get('hero_image_path')) ? Storage::disk('public')->url($path) : null,
+                'title' => Setting::get('hero_title') ?: 'Mau ngopi apa hari ini?',
+                'subtitle' => Setting::get('hero_subtitle') ?: 'Pilih menu, bayar lewat QRIS, transfer, atau tunai di kasir. Tanpa daftar, tanpa login.',
+            ],
         ]);
     }
 

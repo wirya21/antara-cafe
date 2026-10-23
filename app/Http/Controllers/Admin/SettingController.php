@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Support\Busy;
 use App\Support\Costing;
+use App\Support\Photo;
 use App\Support\Theme;
 use App\Support\WhatsApp;
 use Illuminate\Http\RedirectResponse;
@@ -30,6 +31,9 @@ class SettingController extends Controller
             'busy' => Busy::on(),
             'busyMessage' => Setting::get('busy_message'),
             'busyExtra' => (int) Setting::get('busy_extra_minutes', '10'),
+            'heroUrl' => ($hero = Setting::get('hero_image_path')) ? Storage::disk('public')->url($hero) : null,
+            'heroTitle' => Setting::get('hero_title'),
+            'heroSubtitle' => Setting::get('hero_subtitle'),
             'theme' => Theme::key(),
             'themeColor' => Theme::color(),
         ]);
@@ -49,6 +53,10 @@ class SettingController extends Controller
             'op_monthly_servings' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'busy_message' => ['nullable', 'string', 'max:200'],
             'busy_extra_minutes' => ['nullable', 'integer', 'min:0', 'max:120'],
+            'hero_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'remove_hero_image' => ['nullable', 'boolean'],
+            'hero_title' => ['nullable', 'string', 'max:80'],
+            'hero_subtitle' => ['nullable', 'string', 'max:200'],
             'theme' => ['nullable', 'string', 'in:custom,'.implode(',', array_keys(Theme::PRESETS))],
             'theme_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], [
@@ -64,6 +72,18 @@ class SettingController extends Controller
         if ($old && $old !== Setting::get('qris_image_path')) {
             Storage::disk('public')->delete($old);
         }
+
+        $oldHero = Setting::get('hero_image_path');
+        if ($request->hasFile('hero_image')) {
+            Setting::put('hero_image_path', Photo::store($request->file('hero_image'), 'pengaturan', 1600));
+        } elseif ($request->boolean('remove_hero_image')) {
+            Setting::put('hero_image_path', null);
+        }
+        if ($oldHero && $oldHero !== Setting::get('hero_image_path')) {
+            Storage::disk('public')->delete($oldHero);
+        }
+        Setting::put('hero_title', $data['hero_title'] ?? null);
+        Setting::put('hero_subtitle', $data['hero_subtitle'] ?? null);
 
         Setting::put('bank_accounts', $data['bank_accounts'] ?? null);
         Setting::put('whatsapp_numbers', $data['whatsapp_numbers'] ?? null);

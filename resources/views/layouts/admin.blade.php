@@ -11,8 +11,9 @@
     @php
         $nav = [
             ['admin.dashboard', 'Dashboard', 'admin.dashboard'],
-            ['admin.reports.index', 'Laporan', 'admin.reports.*'],
+            ['admin.board.index', 'Pesanan', 'admin.board.*'],
             ['admin.orders.index', 'Transaksi', 'admin.orders.*'],
+            ['admin.reports.index', 'Laporan', 'admin.reports.*'],
             ['admin.products.index', 'Produk', 'admin.products.*'],
             ['admin.recipes.index', 'Resep & stok', 'admin.recipes.*'],
             ['admin.ingredients.index', 'Stok bahan', 'admin.ingredients.*'],
@@ -25,6 +26,10 @@
             ['menu', 'Lihat menu pelanggan ↗', 'menu'],
             ['display', 'Buka layar TV ↗', 'display'],
         ];
+        // Lencana di menu Pesanan: yang masih perlu ditangani (belum dibayar + sedang dibuat).
+        $activeOrders = \App\Models\Order::where('status', 'pending')
+            ->orWhere(fn ($q) => $q->where('status', 'paid')->whereNull('completed_at')->where('paid_at', '>=', now()->subDay()))
+            ->count();
     @endphp
     <div x-data="{ navOpen: false }" class="flex min-h-screen flex-col md:flex-row">
         {{-- Bar atas HP: logo, judul halaman, tombol menu --}}
@@ -36,7 +41,7 @@
                 <p class="text-xs leading-none text-espresso-200">☕ Antara Cafe</p>
                 <p class="mt-1 truncate text-base leading-tight font-semibold">@yield('title')</p>
             </div>
-            <x-order-alerts :href="route('admin.orders.index', ['status' => 'pending', 'from' => now()->subDays(2)->toDateString()])" dark />
+            <x-order-alerts :href="route('admin.board.index')" dark />
         </div>
 
         <div x-show="navOpen" x-cloak x-transition.opacity @click="navOpen = false" class="fixed inset-0 z-40 bg-black/50 md:hidden"></div>
@@ -55,6 +60,9 @@
                     <a href="{{ route($route) }}"
                        class="rounded-lg px-3 py-2.5 text-sm md:py-2 {{ request()->routeIs($pattern) ? 'bg-espresso-700 font-semibold text-white' : 'hover:bg-espresso-800' }}">
                         {{ $label }}
+                        @if ($route === 'admin.board.index' && $activeOrders)
+                            <span class="float-right rounded-md bg-amber-400 px-1.5 text-xs leading-5 font-bold text-espresso-900 tabular-nums">{{ $activeOrders }}</span>
+                        @endif
                     </a>
                 @endforeach
             </nav>
@@ -71,7 +79,7 @@
             <header class="print:hidden hidden items-center justify-between border-b border-espresso-100 bg-white px-6 py-3 md:flex">
                 <h1 class="text-lg font-semibold">@yield('title')</h1>
                 <div class="flex items-center gap-3 text-sm">
-                    <x-order-alerts :href="route('admin.orders.index', ['status' => 'pending', 'from' => now()->subDays(2)->toDateString()])" />
+                    <x-order-alerts :href="route('admin.board.index')" />
                     <a href="{{ route('password.edit') }}" class="text-espresso-600 hover:underline" title="Ganti password">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

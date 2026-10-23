@@ -86,9 +86,15 @@ class CashierController extends Controller
     /** Aksi ini dipakai dari halaman kasir dan dari detail transaksi admin. */
     private function backTo(Request $request, Order $order): RedirectResponse
     {
-        return $request->input('kembali') === 'admin' && $request->user()->isAdmin()
-            ? redirect()->route('admin.orders.show', $order)
-            : redirect()->route('cashier.index');
+        if (! $request->user()->isAdmin()) {
+            return redirect()->route('cashier.index');
+        }
+
+        return match ($request->input('kembali')) {
+            'admin' => redirect()->route('admin.orders.show', $order),
+            'pesanan' => redirect()->route('admin.board.index', ['tab' => $request->input('tab', 'masuk')]),
+            default => redirect()->route('cashier.index'),
+        };
     }
 
     public function proof(Order $order)

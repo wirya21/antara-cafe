@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
+use App\Support\Photo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +30,7 @@ class PromotionController extends Controller
         $data = $this->validated($request);
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('promotions', 'public');
+            $data['image_path'] = Photo::store($request->file('image'), 'promotions', 1200);
         }
 
         Promotion::create($data);
@@ -50,7 +51,7 @@ class PromotionController extends Controller
             if ($promotion->image_path) {
                 Storage::disk('public')->delete($promotion->image_path);
             }
-            $data['image_path'] = $request->hasFile('image') ? $request->file('image')->store('promotions', 'public') : null;
+            $data['image_path'] = $request->hasFile('image') ? Photo::store($request->file('image'), 'promotions', 1200) : null;
         }
 
         $promotion->update($data);

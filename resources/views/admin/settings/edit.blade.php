@@ -114,6 +114,33 @@
             </div>
         </div>
 
+        {{-- Hero menu pelanggan --}}
+        <div class="card space-y-4 p-4 sm:p-6 lg:col-span-2">
+            <div>
+                <h2 class="text-lg font-semibold">Tampilan atas menu (hero)</h2>
+                <p class="text-sm text-espresso-600">Gambar dan sapaan paling atas di halaman menu pelanggan. Pakai foto suasana kafe atau menu andalan, posisi landscape.</p>
+            </div>
+            <div class="grid gap-4 lg:grid-cols-[1fr_1fr]">
+                <div>
+                    <x-image-input name="hero_image" :url="$heroUrl" aspect="aspect-[16/9]" hint="JPG/PNG/WebP, maks 4 MB. Ukuran ideal 1600×900." />
+                    @if ($heroUrl)
+                        <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="remove_hero_image" value="1"> Hapus gambar (pakai latar warna tema)</label>
+                    @endif
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label for="hero_title" class="label">Judul</label>
+                        <input id="hero_title" name="hero_title" value="{{ old('hero_title', $heroTitle) }}" maxlength="80" class="input" placeholder="Mau ngopi apa hari ini?">
+                    </div>
+                    <div>
+                        <label for="hero_subtitle" class="label">Kalimat di bawah judul</label>
+                        <textarea id="hero_subtitle" name="hero_subtitle" rows="3" maxlength="200" class="input" placeholder="Pilih menu, bayar lewat QRIS, transfer, atau tunai di kasir. Tanpa daftar, tanpa login.">{{ old('hero_subtitle', $heroSubtitle) }}</textarea>
+                    </div>
+                    <a href="{{ route('menu') }}" target="_blank" class="inline-block text-sm font-semibold text-espresso-700 underline">Lihat menu pelanggan ↗</a>
+                </div>
+            </div>
+        </div>
+
         {{-- Tema warna --}}
         <div class="card space-y-4 p-4 sm:p-6 lg:col-span-2" x-data="{ theme: @js($theme), color: @js($themeColor), presets: @js(\App\Support\Theme::PRESETS) }">
             <div>
