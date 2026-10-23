@@ -12,7 +12,7 @@
             <thead class="border-b border-espresso-100 text-espresso-600">
                 <tr>
                     <th class="px-4 py-3 font-medium">Nama</th>
-                    <th class="px-4 py-3 font-medium">Email</th>
+                    <th class="px-4 py-3 font-medium">Username</th>
                     <th class="px-4 py-3 font-medium">Peran</th>
                     <th class="px-4 py-3"></th>
                 </tr>
@@ -21,7 +21,7 @@
                 @foreach ($users as $user)
                     <tr>
                         <td class="px-4 py-3 font-medium">{{ $user->name }}</td>
-                        <td class="px-4 py-3">{{ $user->email }}</td>
+                        <td class="px-4 py-3 font-mono">{{ $user->username }}</td>
                         <td class="px-4 py-3">{{ \App\Models\User::ROLES[$user->role] ?? $user->role }}</td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
                             <a href="{{ route('admin.users.edit', $user) }}" class="btn-ghost py-1">Ubah</a>

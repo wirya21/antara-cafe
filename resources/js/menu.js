@@ -15,8 +15,16 @@ export default (menu, initial = {}) => ({
     tableNumber: initial.tableNumber ?? '',
     submitting: false,
     bump: false,
+    autoPromos: initial.autoPromos ?? [],
+    voucherUrl: initial.voucherUrl,
+    voucherCode: initial.voucherCode ?? '',
+    voucher: null,
+    voucherError: '',
+    memberPhone: initial.memberPhone ?? '',
 
     init() {
+        if (this.voucherCode) this.applyVoucher();
+
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
             const products = this.allProducts;
@@ -70,8 +78,47 @@ export default (menu, initial = {}) => ({
         return this.cart.reduce((sum, line) => sum + line.qty, 0);
     },
 
-    get total() {
+    get subtotal() {
         return this.cart.reduce((sum, line) => sum + line.qty * (this.product(line.id)?.price ?? 0), 0);
+    },
+
+    discountOf(promo) {
+        if (!promo || this.subtotal < promo.min) return 0;
+        const amount = promo.type === 'percent' ? Math.floor((this.subtotal * Math.min(promo.value, 100)) / 100) : promo.value;
+        return Math.min(amount, this.subtotal);
+    },
+
+    get appliedPromo() {
+        if (this.voucher) return this.voucher;
+        return [...this.autoPromos].sort((a, b) => this.discountOf(b) - this.discountOf(a)).find((p) => this.discountOf(p) > 0) ?? null;
+    },
+
+    get discount() {
+        return this.discountOf(this.appliedPromo);
+    },
+
+    get total() {
+        return this.subtotal - this.discount;
+    },
+
+    async applyVoucher() {
+        this.voucherError = '';
+        this.voucher = null;
+        const code = this.voucherCode.trim();
+        if (!code) return;
+
+        try {
+            const response = await fetch(this.voucherUrl + '?code=' + encodeURIComponent(code), { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!response.ok) {
+                this.voucherError = data.message ?? 'Kode voucher tidak berlaku.';
+                return;
+            }
+            this.voucher = data;
+            if (this.subtotal < data.min) this.voucherError = 'Berlaku untuk belanja minimal ' + rupiah(data.min) + '.';
+        } catch {
+            this.voucherError = 'Gagal memeriksa voucher. Coba lagi.';
+        }
     },
 
     add(id, qty = 1, note = '') {

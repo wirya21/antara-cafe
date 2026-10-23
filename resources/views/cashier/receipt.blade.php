@@ -36,6 +36,11 @@
         <tr class="big"><td>TOTAL</td><td class="r">{{ number_format($order->total, 0, ',', '.') }}</td></tr>
         <tr><td>Bayar</td><td class="r">{{ \App\Models\Order::PAYMENT_METHODS[$order->payment_method] ?? $order->payment_method }}</td></tr>
     </table>
+    @if ($order->member)
+        <hr>
+        <div>Member: {{ $order->member->name }}</div>
+        <div>Poin: +{{ intdiv($order->total, \App\Models\Member::RUPIAH_PER_POINT) }} (total {{ $order->member->points }})</div>
+    @endif
     <hr>
     <div class="c">Terima kasih sudah mampir!</div>
 </body>

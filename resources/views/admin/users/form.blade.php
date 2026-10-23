@@ -13,8 +13,14 @@
             @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
         <div>
-            <label for="email" class="label">Email (untuk login)</label>
-            <input id="email" type="email" name="email" value="{{ old('email', $user->email) }}" required class="input">
+            <label for="username" class="label">Username (untuk login)</label>
+            <input id="username" name="username" value="{{ old('username', $user->username) }}" required autocapitalize="none" class="input" placeholder="mis. kasirpagi">
+            <p class="mt-1 text-xs text-espresso-600">Huruf kecil, angka, - atau _. Tanpa spasi.</p>
+            @error('username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label for="email" class="label">Email (opsional)</label>
+            <input id="email" type="email" name="email" value="{{ old('email', $user->email) }}" class="input">
             @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
         <div>

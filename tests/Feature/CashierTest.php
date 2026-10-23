@@ -28,7 +28,7 @@ class CashierTest extends TestCase
 
     public function test_cashier_lands_on_cashier_page_after_login(): void
     {
-        $this->post('/login', ['email' => $this->cashier->email, 'password' => 'rahasia123'])
+        $this->post('/login', ['username' => $this->cashier->username, 'password' => 'rahasia123'])
             ->assertRedirect(route('cashier.index'));
 
         $this->get('/kasir')->assertOk()->assertSee('Pesanan masuk');
@@ -104,14 +104,14 @@ class CashierTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']))->post('/admin/users', [
             'name' => 'Kasir Pagi',
-            'email' => 'pagi@antaracafe.test',
+            'username' => 'kasirpagi',
             'role' => 'kasir',
             'password' => 'kasirpagi1',
             'password_confirmation' => 'kasirpagi1',
         ])->assertRedirect(route('admin.users.index'));
 
         $this->post('/logout');
-        $this->post('/login', ['email' => 'pagi@antaracafe.test', 'password' => 'kasirpagi1'])
+        $this->post('/login', ['username' => 'kasirpagi', 'password' => 'kasirpagi1'])
             ->assertRedirect(route('cashier.index'));
     }
 }

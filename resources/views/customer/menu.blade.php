@@ -8,7 +8,15 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#f7f1ea] font-sans text-espresso-900 antialiased">
-<div x-data="menuApp(@js($menu), @js(['tableNumber' => old('table_number', $table), 'customerName' => old('customer_name', ''), 'openCart' => $errors->any()]))" class="min-h-screen lg:pr-[400px]">
+<div x-data="menuApp(@js($menu), @js([
+        'tableNumber' => old('table_number', $table),
+        'customerName' => old('customer_name', ''),
+        'memberPhone' => old('member_phone', ''),
+        'voucherCode' => old('voucher_code', ''),
+        'openCart' => $errors->any(),
+        'autoPromos' => $autoPromos,
+        'voucherUrl' => route('menu.voucher'),
+    ]))" class="min-h-screen lg:pr-[400px]">
 
     {{-- Hero --}}
     <header class="relative overflow-hidden bg-espresso-900 text-espresso-50">
@@ -210,10 +218,26 @@
                         <label for="table_number" class="label">Nomor meja <span class="font-normal text-espresso-500">(kosongkan jika dibawa pulang)</span></label>
                         <input id="table_number" name="table_number" x-model="tableNumber" maxlength="10" class="input py-2.5" placeholder="mis. 5">
                     </div>
+                    <div>
+                        <label for="member_phone" class="label">No. HP <span class="font-normal text-espresso-500">(opsional, untuk kumpulkan poin member)</span></label>
+                        <input id="member_phone" name="member_phone" x-model="memberPhone" inputmode="tel" maxlength="20" class="input py-2.5" placeholder="08…">
+                    </div>
+                    <div>
+                        <label for="voucher_code" class="label">Kode voucher</label>
+                        <div class="flex gap-2">
+                            <input id="voucher_code" name="voucher_code" x-model="voucherCode" @keydown.enter.prevent="applyVoucher()" maxlength="30" class="input py-2.5 uppercase" placeholder="Punya kode promo?">
+                            <button type="button" @click="applyVoucher()" class="btn-ghost">Pakai</button>
+                        </div>
+                        <p x-show="voucherError" x-text="voucherError" class="mt-1 text-sm text-red-600"></p>
+                    </div>
                 </div>
             </div>
 
             <div class="border-t border-espresso-100 px-6 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+                <div x-show="discount" class="mb-1 flex items-center justify-between text-sm text-green-700">
+                    <span>🎉 <span x-text="appliedPromo?.title"></span></span>
+                    <span x-text="'−' + rupiah(discount)"></span>
+                </div>
                 <div class="flex items-center justify-between">
                     <span class="text-espresso-600">Total</span>
                     <span class="font-display text-2xl font-semibold" x-text="rupiah(total)"></span>

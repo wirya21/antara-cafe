@@ -62,10 +62,13 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:150', Rule::unique('users')->ignore($user)],
+            'username' => ['required', 'string', 'min:3', 'max:30', 'alpha_dash:ascii', Rule::unique('users')->ignore($user)],
+            'email' => ['nullable', 'email', 'max:150', Rule::unique('users')->ignore($user)],
             'role' => ['required', Rule::in(array_keys(User::ROLES))],
             'password' => [$user ? 'nullable' : 'required', 'confirmed', Password::min(8)],
         ]);
+
+        $data['username'] = strtolower($data['username']);
 
         if (blank($data['password'] ?? null)) {
             unset($data['password']);
