@@ -44,7 +44,7 @@ class LoginController extends Controller
         RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.dashboard'));
+        return redirect()->intended($request->user()->homeRoute());
     }
 
     public function logout(Request $request): RedirectResponse

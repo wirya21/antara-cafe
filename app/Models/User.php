@@ -30,8 +30,18 @@ class User extends Authenticatable
         ];
     }
 
+    public const ROLES = [
+        'admin' => 'Admin',
+        'kasir' => 'Kasir',
+    ];
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function homeRoute(): string
+    {
+        return $this->isAdmin() ? route('admin.dashboard') : route('cashier.index');
     }
 }

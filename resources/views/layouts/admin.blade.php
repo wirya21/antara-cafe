@@ -12,6 +12,9 @@
             ['admin.dashboard', 'Dashboard', 'admin.dashboard'],
             ['admin.products.index', 'Produk', 'admin.products.*'],
             ['admin.categories.index', 'Kategori', 'admin.categories.*'],
+            ['admin.users.index', 'Akun', 'admin.users.*'],
+            ['cashier.index', 'Buka kasir ↗', 'cashier.*'],
+            ['menu', 'Lihat menu pelanggan ↗', 'menu'],
         ];
     @endphp
     <div class="flex min-h-screen flex-col md:flex-row">

@@ -28,6 +28,23 @@ class Order extends Model
         return $code;
     }
 
+    public const PAYMENT_METHODS = [
+        'tunai' => 'Tunai',
+        'qris' => 'QRIS',
+        'transfer' => 'Transfer',
+        'kartu' => 'Kartu debit/kredit',
+    ];
+
+    public function markPaid(string $paymentMethod, User $cashier): void
+    {
+        $this->update([
+            'status' => 'paid',
+            'payment_method' => $paymentMethod,
+            'cashier_id' => $cashier->id,
+            'paid_at' => now(),
+        ]);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'code';
