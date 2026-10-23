@@ -65,7 +65,7 @@
                 <template x-for="p in products" :key="p.id">
                     <button type="button" @click="add(p.id)" :disabled="!canAdd(p.id)" class="relative overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-espresso-100 transition hover:ring-espresso-500 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">
                         <div class="aspect-[4/3] bg-espresso-100">
-                            <template x-if="p.image"><img :src="p.image" alt="" class="h-full w-full object-cover"></template>
+                            <template x-if="p.image"><img loading="lazy" decoding="async" :src="p.image" alt="" class="h-full w-full object-cover"></template>
                             <template x-if="!p.image"><div class="grid h-full place-items-center text-4xl" x-text="placeholder(p.group)"></div></template>
                         </div>
                         <div class="p-3">
@@ -171,7 +171,7 @@
                             </template>
                         </ul>
                         <a x-show="o.proof_url" :href="o.proof_url" target="_blank" class="mt-3 flex items-center gap-3 rounded-xl bg-blue-50 p-2 text-sm font-semibold text-blue-800">
-                            <img :src="o.proof_url" alt="" class="h-14 w-14 rounded-lg object-cover">
+                            <img loading="lazy" decoding="async" :src="o.proof_url" alt="" class="h-14 w-14 rounded-lg object-cover">
                             Bukti bayar masuk · cek mutasi lalu konfirmasi
                         </a>
                         <form method="POST" :action="`{{ url('kasir/pesanan') }}/${o.code}/bayar`" class="mt-3 flex gap-2">

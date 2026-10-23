@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Ingredient;
-use App\Support\Costing;
 use App\Models\Product;
+use App\Support\Costing;
+use App\Support\Photo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -47,7 +48,7 @@ class ProductController extends Controller
         $data = $this->validated($request);
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('products', 'public');
+            $data['image_path'] = Photo::store($request->file('image'), 'products', 900);
         }
 
         $product = Product::create($data);
@@ -75,7 +76,7 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($product->image_path);
             }
             $data['image_path'] = $request->hasFile('image')
-                ? $request->file('image')->store('products', 'public')
+                ? Photo::store($request->file('image'), 'products', 900)
                 : null;
         }
 

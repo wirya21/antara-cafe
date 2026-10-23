@@ -7,6 +7,7 @@ import orderAlerts from './order-alerts';
 import swipeConfirm from './swipe-confirm';
 import orderTracker from './order-tracker';
 import orderHistory from './order-history';
+import orderBoard from './order-board';
 
 window.Alpine = Alpine;
 Alpine.plugin(intersect);
@@ -17,5 +18,6 @@ Alpine.data('orderAlerts', orderAlerts);
 Alpine.data('swipeConfirm', swipeConfirm);
 Alpine.data('orderTracker', orderTracker);
 Alpine.data('orderHistory', orderHistory);
+Alpine.data('orderBoard', orderBoard);
 
 Alpine.start();
