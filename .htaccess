@@ -1,0 +1,9 @@
+# Untuk hosting yang document root-nya folder proyek (mis. public_html di Hostinger):
+# semua permintaan diarahkan ke folder public/, sehingga .env, vendor/, storage/ dan
+# file lain di luar public/ tidak pernah bisa diakses dari browser.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

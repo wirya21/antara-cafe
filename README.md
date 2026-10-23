@@ -66,3 +66,15 @@ DB_PASSWORD=...
 ```sh
 php artisan test
 ```
+
+## Deploy ke Hostinger (shared hosting)
+
+Produksi: https://antara.kafehub.id, repo di-deploy ke `public_html` lewat fitur Git Hostinger
+(`composer install` berjalan otomatis). Server tidak menjalankan npm, jadi **jalankan `npm run build`
+dan commit `public/build` setiap kali mengubah CSS/JS** (CI akan gagal jika lupa).
+
+- `.htaccess` di root mengarahkan semua permintaan ke `public/`, sehingga `.env` dan kode tidak bisa diakses.
+- `.env` produksi hanya ada di server (tidak di Git). Isinya antara lain `APP_ENV=production`,
+  `APP_DEBUG=false`, `APP_URL=https://antara.kafehub.id`, `DB_CONNECTION=mysql`, `DB_HOST=127.0.0.1`,
+  dan `PUBLIC_STORAGE_ROOT=public/storage` (Hostinger mematikan `symlink`, jadi `storage:link` tidak dipakai).
+- Setelah deploy: `php artisan migrate --force` lalu `php artisan optimize`.
