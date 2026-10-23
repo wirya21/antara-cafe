@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsStaff;
+use App\Http\Middleware\KeepLandingHostOnLanding;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,9 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
-            'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
+            'admin' => EnsureUserIsAdmin::class,
+            'staff' => EnsureUserIsStaff::class,
         ]);
+        $middleware->web(prepend: KeepLandingHostOnLanding::class);
         $middleware->redirectUsersTo(fn (Request $request) => $request->user()->homeRoute());
     })
     ->withExceptions(function (Exceptions $exceptions): void {
