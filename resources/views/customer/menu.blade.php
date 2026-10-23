@@ -50,7 +50,7 @@
 
         {{-- Banner promo --}}
         @if ($banners->isNotEmpty())
-            <section x-show="!search" class="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
+            <section x-show="!search" class="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 sm:-mx-6 sm:scroll-px-6 sm:px-6">
                 @foreach ($banners as $banner)
                     <div class="relative aspect-[21/9] w-[88%] shrink-0 snap-center overflow-hidden rounded-3xl bg-espresso-800 sm:w-[60%]">
                         <img src="{{ Storage::disk('public')->url($banner->image_path) }}" alt="{{ $banner->title }}" class="h-full w-full object-cover">
@@ -68,7 +68,7 @@
             <div class="flex items-end justify-between">
                 <h2 class="font-display text-xl font-semibold">Favorit pelanggan ⭐</h2>
             </div>
-            <div class="no-scrollbar -mx-4 mt-3 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
+            <div class="no-scrollbar -mx-4 mt-3 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6">
                 <template x-for="p in featured" :key="'f' + p.id">
                     <button type="button" @click="openDetail(p)" class="group relative h-56 w-44 shrink-0 snap-start overflow-hidden rounded-3xl text-left shadow-md shadow-espresso-900/10 sm:w-52">
                         <template x-if="p.image">
