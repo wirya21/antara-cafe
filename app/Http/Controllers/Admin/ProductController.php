@@ -16,7 +16,7 @@ class ProductController extends Controller
 {
     public function index(Request $request): View
     {
-        $products = Product::with('category')
+        $products = Product::with('category', 'ingredients')
             ->when($request->filled('category'), fn ($q) => $q->where('category_id', $request->integer('category')))
             ->when($request->filled('q'), fn ($q) => $q->where('name', 'like', '%'.$request->string('q').'%'))
             ->orderBy(Category::select('sort_order')->whereColumn('categories.id', 'products.category_id'))

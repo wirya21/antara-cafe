@@ -122,7 +122,16 @@ export default (menu, initial = {}) => ({
         }
     },
 
+    /** Masih boleh menambah? Dibatasi sisa porsi dari stok bahan. */
+    canAdd(id, qty = 1) {
+        const left = this.product(id)?.left;
+        if (left === null || left === undefined) return true;
+        const inCart = this.cart.filter((l) => l.id === id).reduce((sum, l) => sum + l.qty, 0);
+        return inCart + qty <= left;
+    },
+
     add(id, qty = 1, note = '') {
+        if (!this.canAdd(id, qty)) return;
         const line = this.cart.find((l) => l.id === id && (l.note ?? '') === note);
         if (line) {
             line.qty += qty;
@@ -141,6 +150,7 @@ export default (menu, initial = {}) => ({
 
     changeLine(index, delta) {
         const line = this.cart[index];
+        if (delta > 0 && !this.canAdd(line.id)) return;
         line.qty += delta;
         if (line.qty <= 0) this.cart.splice(index, 1);
     },

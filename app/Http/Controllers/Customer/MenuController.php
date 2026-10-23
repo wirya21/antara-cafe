@@ -21,7 +21,7 @@ class MenuController extends Controller
     public function index(Request $request): View
     {
         $categories = Category::where('is_active', true)
-            ->with(['products' => fn ($q) => $q->orderBy('sort_order')->orderBy('name')])
+            ->with(['products' => fn ($q) => $q->with('ingredients')->orderBy('sort_order')->orderBy('name')])
             ->whereHas('products')
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -37,7 +37,8 @@ class MenuController extends Controller
                 'description' => $product->description,
                 'price' => $product->price,
                 'image' => $product->image_url,
-                'available' => $product->is_available,
+                'available' => $product->isOrderable(),
+                'left' => $product->servingsLeft(),
                 'featured' => $product->is_featured,
                 'group' => $category->group,
             ])->values(),

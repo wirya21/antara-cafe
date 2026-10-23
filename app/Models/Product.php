@@ -37,6 +37,42 @@ class Product extends Model
         return (int) round($this->ingredients->sum(fn ($i) => $i->pivot->quantity * $i->cost_per_unit));
     }
 
+    /** Batas "hampir habis" untuk label "Sisa N" di menu. */
+    public const LOW_SERVINGS = 5;
+
+    /**
+     * Berapa porsi lagi yang bisa dibuat dari stok bahan saat ini.
+     * Null bila produk belum punya resep (stok tidak bisa dihitung).
+     */
+    public function servingsLeft(): ?int
+    {
+        $limits = $this->ingredients
+            ->filter(fn ($i) => $i->pivot->quantity > 0)
+            ->map(fn ($i) => (int) floor(max($i->stock, 0) / $i->pivot->quantity + 1e-9));
+
+        return $limits->isEmpty() ? null : $limits->min();
+    }
+
+    /** Bahan yang paling membatasi jumlah porsi. */
+    public function limitingIngredient(): ?Ingredient
+    {
+        return $this->ingredients
+            ->filter(fn ($i) => $i->pivot->quantity > 0)
+            ->sortBy(fn ($i) => max($i->stock, 0) / $i->pivot->quantity)
+            ->first();
+    }
+
+    /** Bisa dipesan: ditandai tersedia dan stok bahannya cukup untuk minimal satu porsi. */
+    public function isOrderable(): bool
+    {
+        return $this->is_available && $this->servingsLeft() !== 0;
+    }
+
+    public function soldOutByStock(): bool
+    {
+        return $this->is_available && $this->servingsLeft() === 0;
+    }
+
     protected function imageUrl(): Attribute
     {
         return Attribute::get(fn () => $this->image_path ? Storage::disk('public')->url($this->image_path) : null);

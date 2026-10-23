@@ -40,13 +40,21 @@ export default (menu, pending, processing, pendingUrl) => ({
         return this.menu.flatMap((c) => c.products).find((p) => p.id === id);
     },
 
+    /** Sisa porsi dari stok bahan; null bila menu tidak punya resep. */
+    canAdd(id) {
+        const left = this.product(id)?.left;
+        return left === null || left === undefined || this.qtyOf(id) < left;
+    },
+
     add(id) {
+        if (!this.canAdd(id)) return;
         const line = this.cart.find((l) => l.id === id);
         line ? line.qty++ : this.cart.push({ id, qty: 1, note: '' });
         this.tab = 'baru';
     },
 
     change(index, delta) {
+        if (delta > 0 && !this.canAdd(this.cart[index].id)) return;
         this.cart[index].qty += delta;
         if (this.cart[index].qty <= 0) this.cart.splice(index, 1);
     },

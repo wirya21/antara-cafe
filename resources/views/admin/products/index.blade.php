@@ -35,9 +35,18 @@
                         </div>
                         <p class="font-semibold whitespace-nowrap text-espresso-700"><x-rupiah :value="$product->price" /></p>
                     </div>
-                    <div class="mt-2 flex gap-1 text-xs">
+                    <div class="mt-2 flex flex-wrap gap-1 text-xs">
+                        @php $left = $product->servingsLeft(); @endphp
                         @unless ($product->is_available)
-                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">Habis</span>
+                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">Tidak dijual</span>
+                        @else
+                            @if ($left === 0)
+                                <span class="rounded-full bg-red-100 px-2 py-0.5 font-semibold text-red-700" title="Stok {{ $product->limitingIngredient()?->name }} habis">Habis · stok {{ $product->limitingIngredient()?->name }}</span>
+                            @elseif ($left !== null && $left <= \App\Models\Product::LOW_SERVINGS)
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-800">Sisa {{ $left }} porsi</span>
+                            @elseif ($left !== null)
+                                <span class="rounded-full bg-green-50 px-2 py-0.5 text-green-700">± {{ $left }} porsi</span>
+                            @endif
                         @endunless
                         @if ($product->is_featured)
                             <span class="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">Unggulan</span>
