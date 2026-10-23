@@ -109,7 +109,10 @@
                     <div class="grid grid-cols-2 gap-2">
                         <input name="customer_name" maxlength="50" placeholder="Nama (opsional)" class="input">
                         <input name="table_number" maxlength="10" placeholder="Meja" class="input">
+                        <input name="member_phone" inputmode="tel" maxlength="20" placeholder="No. HP member" class="input">
+                        <input name="voucher_code" maxlength="30" placeholder="Kode voucher" class="input uppercase">
                     </div>
+                    <p class="text-xs text-espresso-500">Diskon voucher atau promo otomatis dihitung saat Bayar dan tercetak di struk.</p>
                     <div class="grid grid-cols-4 gap-1.5">
                         @foreach ($paymentMethods as $value => $label)
                             <label class="cursor-pointer">

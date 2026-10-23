@@ -2,8 +2,10 @@
 
 namespace App\Actions;
 
+use App\Models\Member;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Promotion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -15,8 +17,16 @@ class PlaceOrder
      * @param  array<int, array{product_id: int, quantity: int, note?: string|null}>  $items
      * @param  array<string, mixed>  $attributes  kolom order lain (source, customer_name, table_number, ...)
      */
-    public function handle(array $items, array $attributes = []): Order
+    public function handle(array $items, array $attributes = [], ?string $voucherCode = null, ?string $memberPhone = null): Order
     {
+        $voucher = null;
+        if (filled($voucherCode)) {
+            $voucher = Promotion::findVoucher($voucherCode);
+            if (! $voucher) {
+                throw ValidationException::withMessages(['voucher_code' => 'Kode voucher tidak berlaku atau sudah berakhir.']);
+            }
+        }
+
         $products = Product::with('category')
             ->whereIn('id', array_column($items, 'product_id'))
             ->get()
@@ -32,7 +42,11 @@ class PlaceOrder
             }
         }
 
-        return DB::transaction(function () use ($items, $products, $attributes) {
+        return DB::transaction(function () use ($items, $products, $attributes, $voucher, $memberPhone) {
+            if (filled($memberPhone)) {
+                $attributes['member_id'] = Member::findOrRegister($memberPhone, $attributes['customer_name'] ?? null)->id;
+            }
+
             $order = Order::create([
                 ...$attributes,
                 'code' => Order::generateCode(),
@@ -56,7 +70,21 @@ class PlaceOrder
                 ]);
             }
 
-            $order->update(['subtotal' => $subtotal, 'total' => $subtotal - ($order->discount ?? 0)]);
+            if ($voucher && $voucher->discountFor($subtotal) === 0) {
+                throw ValidationException::withMessages([
+                    'voucher_code' => 'Voucher ini berlaku untuk belanja minimal Rp'.number_format($voucher->min_purchase, 0, ',', '.').'.',
+                ]);
+            }
+
+            $promotion = $voucher ?? Promotion::bestAutomaticFor($subtotal);
+            $discount = $promotion?->discountFor($subtotal) ?? 0;
+
+            $order->update([
+                'subtotal' => $subtotal,
+                'discount' => $discount,
+                'promotion_id' => $promotion?->id,
+                'total' => $subtotal - $discount,
+            ]);
 
             return $order;
         });

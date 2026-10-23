@@ -58,6 +58,10 @@ class CashierController extends Controller
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:100'],
             'items.*.note' => ['nullable', 'string', 'max:120'],
+            'voucher_code' => ['nullable', 'string', 'max:30'],
+            'member_phone' => ['nullable', 'string', 'regex:/^[0-9+\s-]{8,20}$/'],
+        ], [
+            'member_phone.regex' => 'Nomor HP tidak valid.',
         ]);
 
         $order = DB::transaction(function () use ($data, $placeOrder, $request) {
@@ -65,7 +69,7 @@ class CashierController extends Controller
                 'source' => 'kasir',
                 'customer_name' => $data['customer_name'] ?? null,
                 'table_number' => $data['table_number'] ?? null,
-            ]);
+            ], $data['voucher_code'] ?? null, $data['member_phone'] ?? null);
             $order->markPaid($data['payment_method'], $request->user());
 
             return $order;
@@ -104,7 +108,7 @@ class CashierController extends Controller
     {
         abort_unless($order->status === 'paid', 404);
 
-        return view('cashier.receipt', ['order' => $order->load('items', 'cashier')]);
+        return view('cashier.receipt', ['order' => $order->load('items', 'cashier', 'member')]);
     }
 
     private function pendingOrders(): array

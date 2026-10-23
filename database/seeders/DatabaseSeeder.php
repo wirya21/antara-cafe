@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\Inventory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -70,6 +72,59 @@ class DatabaseSeeder extends Seeder
                     'is_featured' => $i === 0,
                 ]);
             }
+        }
+
+        $this->seedIngredients();
+    }
+
+    /** Contoh bahan dan resep. Ubah sesuai takaran dan harga di kafe. */
+    private function seedIngredients(): void
+    {
+        if (Ingredient::exists()) {
+            return;
+        }
+
+        $inventory = app(Inventory::class);
+        $ingredients = [];
+
+        foreach ([
+            // nama, satuan, stok awal, total harga, minimum
+            ['Biji kopi arabika', 'gram', 2000, 500000, 500],
+            ['Susu segar', 'ml', 10000, 200000, 2000],
+            ['Gula aren cair', 'ml', 2000, 60000, 500],
+            ['Bubuk matcha', 'gram', 500, 250000, 100],
+            ['Bubuk cokelat', 'gram', 1000, 150000, 200],
+            ['Teh hitam', 'gram', 500, 50000, 100],
+            ['Lemon', 'pcs', 30, 60000, 10],
+            ['Beras', 'gram', 5000, 75000, 1000],
+            ['Telur', 'pcs', 30, 60000, 10],
+            ['Croissant beku', 'pcs', 20, 160000, 6],
+            ['Kentang beku', 'gram', 5000, 175000, 1000],
+            ['Cup + tutup', 'pcs', 200, 200000, 50],
+        ] as [$name, $unit, $stock, $cost, $min]) {
+            $ingredient = Ingredient::create(['name' => $name, 'unit' => $unit, 'min_stock' => $min]);
+            $inventory->purchase($ingredient, $stock, $cost, note: 'Stok awal');
+            $ingredients[$name] = $ingredient->id;
+        }
+
+        $recipes = [
+            'espresso' => ['Biji kopi arabika' => 18],
+            'americano' => ['Biji kopi arabika' => 18, 'Cup + tutup' => 1],
+            'caffe-latte' => ['Biji kopi arabika' => 18, 'Susu segar' => 150, 'Cup + tutup' => 1],
+            'cappuccino' => ['Biji kopi arabika' => 18, 'Susu segar' => 120, 'Cup + tutup' => 1],
+            'v60-kintamani' => ['Biji kopi arabika' => 15],
+            'matcha-latte' => ['Bubuk matcha' => 5, 'Susu segar' => 180, 'Gula aren cair' => 15, 'Cup + tutup' => 1],
+            'chocolate' => ['Bubuk cokelat' => 25, 'Susu segar' => 180, 'Cup + tutup' => 1],
+            'lemon-tea' => ['Teh hitam' => 3, 'Lemon' => 0.5, 'Gula aren cair' => 20, 'Cup + tutup' => 1],
+            'nasi-goreng-antara' => ['Beras' => 150, 'Telur' => 1],
+            'croissant-butter' => ['Croissant beku' => 1],
+            'french-fries' => ['Kentang beku' => 150],
+        ];
+
+        foreach ($recipes as $slug => $recipe) {
+            Product::where('slug', $slug)->first()?->ingredients()->sync(
+                collect($recipe)->mapWithKeys(fn ($qty, $name) => [$ingredients[$name] => ['quantity' => $qty]])
+            );
         }
     }
 }

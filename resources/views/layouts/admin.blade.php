@@ -15,6 +15,8 @@
             ['admin.products.index', 'Produk', 'admin.products.*'],
             ['admin.ingredients.index', 'Stok bahan', 'admin.ingredients.*'],
             ['admin.categories.index', 'Kategori', 'admin.categories.*'],
+            ['admin.promotions.index', 'Promo & voucher', 'admin.promotions.*'],
+            ['admin.members.index', 'Member', 'admin.members.*'],
             ['admin.users.index', 'Akun', 'admin.users.*'],
             ['cashier.index', 'Buka kasir ↗', 'cashier.*'],
             ['menu', 'Lihat menu pelanggan ↗', 'menu'],

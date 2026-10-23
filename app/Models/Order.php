@@ -52,6 +52,7 @@ class Order extends Model
 
             $this->refresh();
             app(Inventory::class)->recordSale($this);
+            $this->member?->increment('points', intdiv($this->total, Member::RUPIAH_PER_POINT));
         });
     }
 
@@ -61,6 +62,11 @@ class Order extends Model
         DB::transaction(function () use ($by, $reason) {
             $this->update(['status' => 'cancelled', 'void_reason' => $reason, 'voided_by' => $by->id, 'voided_at' => now()]);
             app(Inventory::class)->reverseSale($this, $by);
+
+            if ($this->member) {
+                $this->member->points = max(0, $this->member->points - intdiv($this->total, Member::RUPIAH_PER_POINT));
+                $this->member->save();
+            }
         });
     }
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Promotion;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -41,6 +42,8 @@ class MenuController extends Controller
         return view('customer.menu', [
             'menu' => $menu,
             'banners' => Promotion::running()->whereNotNull('image_path')->latest()->get(),
+            'autoPromos' => Promotion::running()->whereNotNull('discount_type')->whereNull('voucher_code')->get()
+                ->map(fn ($p) => $this->promoPayload($p))->values(),
             'table' => $request->string('meja')->limit(10, '')->toString(),
         ]);
     }
@@ -54,7 +57,10 @@ class MenuController extends Controller
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:50'],
             'items.*.note' => ['nullable', 'string', 'max:120'],
+            'voucher_code' => ['nullable', 'string', 'max:30'],
+            'member_phone' => ['nullable', 'string', 'regex:/^[0-9+\s-]{8,20}$/'],
         ], [
+            'member_phone.regex' => 'Nomor HP tidak valid.',
             'customer_name.required' => 'Isi nama Anda supaya kami bisa memanggil saat pesanan siap.',
             'items.required' => 'Keranjang masih kosong.',
         ]);
@@ -63,9 +69,30 @@ class MenuController extends Controller
             'source' => 'self_order',
             'customer_name' => $data['customer_name'],
             'table_number' => $data['table_number'] ?? null,
-        ]);
+        ], $data['voucher_code'] ?? null, $data['member_phone'] ?? null);
 
         return redirect()->route('menu.order', $order);
+    }
+
+    /** Cek kode voucher dari keranjang pelanggan (untuk pratinjau diskon). */
+    public function voucher(Request $request): JsonResponse
+    {
+        $promo = Promotion::findVoucher((string) $request->query('code', ''));
+
+        return $promo
+            ? response()->json($this->promoPayload($promo))
+            : response()->json(['message' => 'Kode voucher tidak berlaku atau sudah berakhir.'], 404);
+    }
+
+    private function promoPayload(Promotion $promo): array
+    {
+        return [
+            'title' => $promo->title,
+            'type' => $promo->discount_type,
+            'value' => $promo->discount_value,
+            'min' => $promo->min_purchase,
+            'summary' => $promo->summary(),
+        ];
     }
 
     public function show(Order $order): View
