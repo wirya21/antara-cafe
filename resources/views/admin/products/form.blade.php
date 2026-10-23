@@ -9,7 +9,7 @@
         @csrf
         @if ($product->exists) @method('PUT') @endif
 
-        <div class="card space-y-4 p-6">
+        <div class="card space-y-4 p-4 sm:p-6">
             <div>
                 <label for="name" class="label">Nama produk</label>
                 <input id="name" name="name" value="{{ old('name', $product->name) }}" required class="input" placeholder="mis. Caffe Latte">
@@ -94,15 +94,9 @@
             </div>
         </div>
 
-        <div class="card h-fit space-y-3 p-6">
+        <div class="card order-first h-fit space-y-3 p-4 sm:p-6 lg:order-none">
             <p class="label">Foto produk</p>
-            <div class="aspect-[4/3] overflow-hidden rounded-lg bg-espresso-100">
-                <img id="preview" src="{{ $product->image_url }}" alt="" class="h-full w-full object-cover {{ $product->image_url ? '' : 'hidden' }}">
-            </div>
-            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm"
-                   onchange="const f=this.files[0]; if(f){const p=document.getElementById('preview'); p.src=URL.createObjectURL(f); p.classList.remove('hidden');}">
-            <p class="text-xs text-espresso-600">JPG, PNG, atau WebP. Maksimal 3 MB.</p>
-            @error('image') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+            <x-image-input :url="$product->image_url" hint="JPG, PNG, atau WebP. Maksimal 3 MB." />
             @if ($product->image_path)
                 <label class="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="remove_image" value="1"> Hapus foto

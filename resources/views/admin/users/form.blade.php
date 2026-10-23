@@ -3,7 +3,7 @@
 @section('title', $user->exists ? 'Ubah akun' : 'Tambah akun')
 
 @section('content')
-    <form method="POST" action="{{ $user->exists ? route('admin.users.update', $user) : route('admin.users.store') }}" class="card max-w-xl space-y-4 p-6">
+    <form method="POST" action="{{ $user->exists ? route('admin.users.update', $user) : route('admin.users.store') }}" class="card max-w-xl space-y-4 p-4 sm:p-6">
         @csrf
         @if ($user->exists) @method('PUT') @endif
 

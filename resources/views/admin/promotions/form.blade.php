@@ -9,7 +9,7 @@
         @csrf
         @if ($promotion->exists) @method('PUT') @endif
 
-        <div class="card space-y-4 p-6">
+        <div class="card space-y-4 p-4 sm:p-6">
             <div>
                 <label for="title" class="label">Judul promo</label>
                 <input id="title" name="title" value="{{ old('title', $promotion->title) }}" required class="input" placeholder="mis. Happy Hour 15.00–17.00">
@@ -68,15 +68,9 @@
             </div>
         </div>
 
-        <div class="card h-fit space-y-3 p-6">
+        <div class="card order-first h-fit space-y-3 p-4 sm:p-6 lg:order-none">
             <p class="label">Banner (opsional)</p>
-            <div class="aspect-[21/9] overflow-hidden rounded-lg bg-espresso-100">
-                <img id="preview" src="{{ $promotion->imageUrl() }}" alt="" class="h-full w-full object-cover {{ $promotion->imageUrl() ? '' : 'hidden' }}">
-            </div>
-            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm"
-                   onchange="const f=this.files[0]; if(f){const p=document.getElementById('preview'); p.src=URL.createObjectURL(f); p.classList.remove('hidden');}">
-            <p class="text-xs text-espresso-600">Rasio lebar 21:9, mis. 1680×720 px. Maks 4 MB.</p>
-            @error('image') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+            <x-image-input :url="$promotion->imageUrl()" aspect="aspect-[21/9]" hint="Rasio lebar 21:9, mis. 1680×720 px. Maks 4 MB." />
             @if ($promotion->image_path)
                 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_image" value="1"> Hapus banner</label>
             @endif

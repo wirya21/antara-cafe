@@ -66,11 +66,11 @@
     </div>
 
     <div class="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <div class="card p-6">
+        <div class="card p-4 sm:p-6">
             <h2 class="font-semibold">Pendapatan per hari</h2>
             <x-bar-chart class="mt-6" :bars="$dailyBars" :label-every="count($dailyBars) > 16 ? 3 : 1" />
         </div>
-        <div class="card p-6">
+        <div class="card p-4 sm:p-6">
             <h2 class="font-semibold">Jam ramai</h2>
             <p class="text-xs text-espresso-500">Jumlah transaksi per jam</p>
             <x-bar-chart class="mt-6" :bars="$hourlyBars" height="h-40" :label-every="2" />
@@ -79,7 +79,7 @@
 
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
         @foreach ([['Metode pembayaran', $payments, 'trx'], ['Per kategori', $categories, 'item']] as [$title, $rows, $unit])
-            <div class="card p-6">
+            <div class="card p-4 sm:p-6">
                 <h2 class="font-semibold">{{ $title }}</h2>
                 @php $rowMax = max(1, $rows->max('revenue')); @endphp
                 <div class="mt-4 space-y-3">
@@ -101,7 +101,7 @@
         @endforeach
     </div>
 
-    <div class="card mt-6 overflow-x-auto p-6">
+    <div class="card mt-6 overflow-x-auto p-4 sm:p-6">
         <h2 class="font-semibold">Produk terlaris</h2>
         <table class="mt-4 w-full text-left text-sm">
             <thead class="border-b border-espresso-100 text-espresso-600">

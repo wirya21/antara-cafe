@@ -3,7 +3,7 @@
 @section('title', $ingredient->exists ? 'Ubah bahan' : 'Tambah bahan')
 
 @section('content')
-    <form method="POST" action="{{ $ingredient->exists ? route('admin.ingredients.update', $ingredient) : route('admin.ingredients.store') }}" class="card max-w-xl space-y-4 p-6">
+    <form method="POST" action="{{ $ingredient->exists ? route('admin.ingredients.update', $ingredient) : route('admin.ingredients.store') }}" class="card max-w-xl space-y-4 p-4 sm:p-6">
         @csrf
         @if ($ingredient->exists) @method('PUT') @endif
 

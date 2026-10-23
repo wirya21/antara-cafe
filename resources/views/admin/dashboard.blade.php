@@ -40,7 +40,7 @@
     </div>
 
     <div class="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <div class="card p-6">
+        <div class="card p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <h2 class="font-semibold">Pendapatan 7 hari terakhir</h2>
                 <a href="{{ route('admin.reports.index') }}" class="text-sm text-espresso-700 hover:underline">Laporan lengkap →</a>
@@ -48,7 +48,7 @@
             <x-bar-chart class="mt-6" :bars="$weekBars" />
         </div>
 
-        <div class="card p-6">
+        <div class="card p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <h2 class="font-semibold">Stok menipis</h2>
                 <a href="{{ route('admin.ingredients.index') }}" class="text-sm text-espresso-700 hover:underline">Stok →</a>
@@ -68,7 +68,7 @@
         </div>
     </div>
 
-    <div class="card mt-6 p-6">
+    <div class="card mt-6 p-4 sm:p-6">
         <h2 class="font-semibold">Terlaris hari ini</h2>
         <ul class="mt-3 divide-y divide-espresso-50 text-sm">
             @forelse ($topToday as $product)
