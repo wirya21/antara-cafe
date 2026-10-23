@@ -23,6 +23,8 @@ php artisan storage:link     # agar foto produk bisa tampil
 php artisan serve
 ```
 
+Alamat produksi: https://antara.kafehub.id (set `APP_URL` di `.env` server).
+
 Buka http://127.0.0.1:8000/login. Email dan password admin tercetak di terminal saat `--seed` (atau isi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` di `.env` sebelum seed).
 
 Secara bawaan database lokal memakai SQLite. Untuk MySQL, ubah di `.env`:
