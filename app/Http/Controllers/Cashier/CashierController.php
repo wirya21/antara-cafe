@@ -67,7 +67,7 @@ class CashierController extends Controller
     {
         $order->markCompleted();
 
-        return $this->backTo($request, $order)->with('status', "Pesanan {$order->code} selesai.");
+        return $this->backTo($request, $order)->with('status', "Pesanan {$order->code} ditandai siap.");
     }
 
     /** Aksi ini dipakai dari halaman kasir dan dari detail transaksi admin. */
@@ -172,6 +172,8 @@ class CashierController extends Controller
             'table_number' => $order->table_number,
             'total' => $order->total,
             'time' => ($order->paid_at ?? $order->created_at)->format('H:i'),
+            // Waktu tunggu dihitung sejak pesanan masuk (belum bayar) atau sejak dibayar (sedang dibuat).
+            'since' => ($order->status === 'paid' ? $order->paid_at : $order->created_at)->toIso8601String(),
             'payment_method' => $order->payment_method,
             'payment_label' => Order::PAYMENT_METHODS[$order->payment_method] ?? null,
             'proof_url' => $order->payment_proof_path ? route('cashier.proof', $order) : null,

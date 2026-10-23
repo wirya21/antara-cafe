@@ -1,3 +1,5 @@
+import { savedOrders } from './order-history-store';
+
 const STORAGE_KEY = 'antara-cart';
 
 const rupiah = (value) => 'Rp' + Number(value).toLocaleString('id-ID');
@@ -10,6 +12,7 @@ export default (menu, initial = {}) => ({
     cartOpen: initial.openCart ?? false,
     detail: null,
     detailQty: 1,
+    hasHistory: savedOrders().length > 0,
     detailNote: '',
     customerName: initial.customerName ?? '',
     tableNumber: initial.tableNumber ?? '',

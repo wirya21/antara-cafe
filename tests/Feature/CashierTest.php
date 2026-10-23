@@ -69,7 +69,7 @@ class CashierTest extends TestCase
 
         $this->assertSame('paid', $order->fresh()->status);
         $this->getJson('/kasir/pesanan-masuk')->assertJsonCount(0, 'pending')->assertJsonPath('processing.0.code', $order->code);
-        $this->get(route('menu.order', $order))->assertSee('Dibayar');
+        $this->get(route('menu.order', $order))->assertSee('Sedang dibuat');
     }
 
     public function test_paid_order_cannot_be_paid_or_cancelled_again(): void

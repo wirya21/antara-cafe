@@ -9,11 +9,13 @@ export default (menu, pending, processing, pendingUrl) => ({
     cart: [],
     tab: pending.length ? 'masuk' : 'baru',
     newArrivals: false,
+    now: Date.now(),
 
     rupiah,
 
     init() {
         setInterval(() => this.refreshPending(), 10000);
+        setInterval(() => (this.now = Date.now()), 15000);
     },
 
     async refreshPending() {
@@ -65,6 +67,18 @@ export default (menu, pending, processing, pendingUrl) => ({
 
     get total() {
         return this.cart.reduce((sum, l) => sum + l.qty * this.product(l.id).price, 0);
+    },
+
+    /** Lama menunggu dalam menit, sejak masuk (belum bayar) atau sejak dibayar (sedang dibuat). */
+    waited(order) {
+        return Math.max(0, Math.floor((this.now - new Date(order.since).getTime()) / 60000));
+    },
+
+    waitClass(order) {
+        const minutes = this.waited(order);
+        if (minutes >= 15) return 'bg-red-600 text-white';
+        if (minutes >= 10) return 'bg-amber-400 text-espresso-900';
+        return 'bg-espresso-100 text-espresso-800';
     },
 
     placeholder(group) {

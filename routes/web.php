@@ -22,6 +22,8 @@ Route::redirect('/', '/menu');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::post('/menu/pesan', [MenuController::class, 'store'])->middleware('throttle:10,1')->name('menu.store');
 Route::get('/menu/voucher', [MenuController::class, 'voucher'])->middleware('throttle:30,1')->name('menu.voucher');
+Route::get('/menu/riwayat', [MenuController::class, 'history'])->name('menu.history');
+Route::get('/menu/riwayat/data', [MenuController::class, 'historyData'])->middleware('throttle:60,1')->name('menu.history.data');
 Route::get('/menu/pesanan/{order}', [MenuController::class, 'show'])->name('menu.order');
 Route::get('/menu/pesanan/{order}/status', [MenuController::class, 'status'])->middleware('throttle:60,1')->name('menu.order.status');
 Route::post('/menu/pesanan/{order}/metode', [MenuController::class, 'changeMethod'])->middleware('throttle:10,1')->name('menu.order.method');

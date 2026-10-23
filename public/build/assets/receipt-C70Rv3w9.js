@@ -1,0 +1,1 @@
+import{n as e,t}from"./browser-DwDA2okr.js";var n=e(t(),1);window.addEventListener(`load`,async()=>{let e=document.getElementById(`track-qr`);try{e.src=await n.toDataURL(document.body.dataset.trackUrl,{margin:0,width:220}),await e.decode()}catch{e.remove()}window.print()});
