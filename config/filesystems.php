@@ -40,7 +40,9 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            // Hosting tanpa symlink (mis. Hostinger shared): isi PUBLIC_STORAGE_ROOT=public/storage
+            // supaya foto langsung disimpan di folder publik tanpa `php artisan storage:link`.
+            'root' => env('PUBLIC_STORAGE_ROOT') ? base_path(env('PUBLIC_STORAGE_ROOT')) : storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
