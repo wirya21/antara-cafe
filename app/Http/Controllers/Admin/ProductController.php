@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Ingredient;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class ProductController extends Controller
         return view('admin.products.form', [
             'product' => new Product(['is_available' => true]),
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(),
+            'ingredients' => Ingredient::orderBy('name')->get(),
         ]);
     }
 
@@ -46,7 +48,8 @@ class ProductController extends Controller
             $data['image_path'] = $request->file('image')->store('products', 'public');
         }
 
-        Product::create($data);
+        $product = Product::create($data);
+        $this->syncRecipe($product, $request);
 
         return redirect()->route('admin.products.index')->with('status', 'Produk ditambahkan.');
     }
@@ -54,8 +57,9 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         return view('admin.products.form', [
-            'product' => $product,
+            'product' => $product->load('ingredients'),
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(),
+            'ingredients' => Ingredient::orderBy('name')->get(),
         ]);
     }
 
@@ -73,6 +77,7 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+        $this->syncRecipe($product, $request);
 
         return redirect()->route('admin.products.index')->with('status', 'Produk diperbarui.');
     }
@@ -97,15 +102,27 @@ class ProductController extends Controller
             'price' => ['required', 'integer', 'min:0'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'recipe' => ['nullable', 'array'],
+            'recipe.*.ingredient_id' => ['nullable', 'exists:ingredients,id'],
+            'recipe.*.quantity' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        unset($data['image']);
+        unset($data['image'], $data['recipe']);
         $data['slug'] = $this->uniqueSlug($data['name'], $product);
         $data['sort_order'] = $data['sort_order'] ?? 0;
         $data['is_available'] = $request->boolean('is_available');
         $data['is_featured'] = $request->boolean('is_featured');
 
         return $data;
+    }
+
+    private function syncRecipe(Product $product, Request $request): void
+    {
+        $recipe = collect($request->input('recipe', []))
+            ->filter(fn ($row) => ! empty($row['ingredient_id']) && (float) ($row['quantity'] ?? 0) > 0)
+            ->mapWithKeys(fn ($row) => [(int) $row['ingredient_id'] => ['quantity' => (float) $row['quantity']]]);
+
+        $product->ingredients()->sync($recipe);
     }
 
     private function uniqueSlug(string $name, ?Product $product): string

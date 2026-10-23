@@ -53,6 +53,41 @@
                 </label>
             </div>
 
+            @php
+                $recipeRows = old('recipe', $product->ingredients->map(fn ($i) => ['ingredient_id' => $i->id, 'quantity' => $i->pivot->quantity])->values()->all());
+                $ingredientData = $ingredients->map(fn ($i) => ['id' => $i->id, 'name' => $i->name, 'unit' => $i->unit, 'cost' => $i->cost_per_unit])->values();
+            @endphp
+            <div class="rounded-xl border border-espresso-100 p-4"
+                 x-data="{ rows: @js(array_values($recipeRows)), ingredients: @js($ingredientData), price: {{ (int) old('price', $product->price) }},
+                           info(id) { return this.ingredients.find(i => i.id == id) },
+                           get cost() { return Math.round(this.rows.reduce((s, r) => s + (Number(r.quantity) || 0) * (this.info(r.ingredient_id)?.cost ?? 0), 0)) } }"
+                 @input.window="if ($event.target.id === 'price') price = Number($event.target.value) || 0">
+                <div class="flex items-center justify-between">
+                    <p class="label mb-0">Resep / bahan per porsi</p>
+                    <button type="button" @click="rows.push({ ingredient_id: '', quantity: '' })" class="text-sm font-semibold text-espresso-700 hover:underline">+ Tambah bahan</button>
+                </div>
+                <p class="mt-1 text-xs text-espresso-600">Stok bahan ini berkurang otomatis setiap porsi terjual.
+                    @if ($ingredients->isEmpty()) Belum ada bahan, <a href="{{ route('admin.ingredients.create') }}" class="underline">tambahkan dulu di Stok bahan</a>. @endif
+                </p>
+                <template x-for="(row, i) in rows" :key="i">
+                    <div class="mt-2 flex items-center gap-2">
+                        <select :name="`recipe[${i}][ingredient_id]`" x-model="row.ingredient_id" class="input">
+                            <option value="">Pilih bahan</option>
+                            <template x-for="ing in ingredients" :key="ing.id">
+                                <option :value="ing.id" x-text="ing.name" :selected="ing.id == row.ingredient_id"></option>
+                            </template>
+                        </select>
+                        <input type="number" step="0.01" min="0" :name="`recipe[${i}][quantity]`" x-model="row.quantity" class="input w-28" placeholder="Jumlah">
+                        <span class="w-12 text-sm text-espresso-600" x-text="info(row.ingredient_id)?.unit ?? ''"></span>
+                        <button type="button" @click="rows.splice(i, 1)" class="text-red-700" aria-label="Hapus">✕</button>
+                    </div>
+                </template>
+                <p x-show="rows.length" class="mt-3 text-sm">
+                    HPP perkiraan: <b x-text="'Rp' + cost.toLocaleString('id-ID')"></b>
+                    <span x-show="price > 0" class="text-espresso-600">· margin <b x-text="Math.round((price - cost) / price * 100) + '%'"></b></span>
+                </p>
+            </div>
+
             <div class="flex gap-2">
                 <button class="btn-primary">Simpan</button>
                 <a href="{{ route('admin.products.index') }}" class="btn-ghost">Batal</a>

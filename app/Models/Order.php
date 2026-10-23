@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Support\Inventory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
-#[Fillable(['code', 'source', 'status', 'customer_name', 'table_number', 'member_id', 'promotion_id', 'cashier_id', 'subtotal', 'discount', 'total', 'payment_method', 'paid_at'])]
+#[Fillable(['code', 'source', 'status', 'customer_name', 'table_number', 'member_id', 'promotion_id', 'cashier_id', 'subtotal', 'discount', 'total', 'payment_method', 'paid_at', 'void_reason', 'voided_by', 'voided_at'])]
 class Order extends Model
 {
     public const STATUSES = [
@@ -37,12 +39,29 @@ class Order extends Model
 
     public function markPaid(string $paymentMethod, User $cashier): void
     {
-        $this->update([
-            'status' => 'paid',
-            'payment_method' => $paymentMethod,
-            'cashier_id' => $cashier->id,
-            'paid_at' => now(),
-        ]);
+        DB::transaction(function () use ($paymentMethod, $cashier) {
+            // Cegah dua kasir membayar pesanan yang sama bersamaan.
+            $updated = static::whereKey($this->id)->where('status', '!=', 'paid')->update([
+                'status' => 'paid',
+                'payment_method' => $paymentMethod,
+                'cashier_id' => $cashier->id,
+                'paid_at' => now(),
+            ]);
+
+            abort_if($updated === 0, 409, 'Pesanan ini sudah dibayar.');
+
+            $this->refresh();
+            app(Inventory::class)->recordSale($this);
+        });
+    }
+
+    /** Batalkan pesanan yang sudah dibayar (void) dan kembalikan stok bahannya. */
+    public function void(User $by, string $reason): void
+    {
+        DB::transaction(function () use ($by, $reason) {
+            $this->update(['status' => 'cancelled', 'void_reason' => $reason, 'voided_by' => $by->id, 'voided_at' => now()]);
+            app(Inventory::class)->reverseSale($this, $by);
+        });
     }
 
     public function getRouteKeyName(): string
@@ -54,6 +73,7 @@ class Order extends Model
     {
         return [
             'paid_at' => 'datetime',
+            'voided_at' => 'datetime',
         ];
     }
 

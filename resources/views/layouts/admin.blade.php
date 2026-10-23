@@ -10,7 +10,10 @@
     @php
         $nav = [
             ['admin.dashboard', 'Dashboard', 'admin.dashboard'],
+            ['admin.reports.index', 'Laporan', 'admin.reports.*'],
+            ['admin.orders.index', 'Transaksi', 'admin.orders.*'],
             ['admin.products.index', 'Produk', 'admin.products.*'],
+            ['admin.ingredients.index', 'Stok bahan', 'admin.ingredients.*'],
             ['admin.categories.index', 'Kategori', 'admin.categories.*'],
             ['admin.users.index', 'Akun', 'admin.users.*'],
             ['cashier.index', 'Buka kasir ↗', 'cashier.*'],
@@ -19,7 +22,7 @@
         ];
     @endphp
     <div class="flex min-h-screen flex-col md:flex-row">
-        <aside class="bg-espresso-900 text-espresso-100 md:w-60 md:shrink-0">
+        <aside class="print:hidden bg-espresso-900 text-espresso-100 md:w-60 md:shrink-0">
             <div class="flex items-center justify-between px-5 py-4 md:block md:py-6">
                 <a href="{{ route('admin.dashboard') }}" class="text-lg font-semibold tracking-wide text-white">☕ Antara Cafe</a>
                 <p class="hidden text-xs text-espresso-200 md:mt-1 md:block">Panel admin</p>
@@ -35,7 +38,7 @@
         </aside>
 
         <div class="flex-1">
-            <header class="flex items-center justify-between border-b border-espresso-100 bg-white px-6 py-3">
+            <header class="print:hidden flex items-center justify-between border-b border-espresso-100 bg-white px-6 py-3">
                 <h1 class="text-lg font-semibold">@yield('title')</h1>
                 <div class="flex items-center gap-3 text-sm">
                     <a href="{{ route('password.edit') }}" class="text-espresso-600 hover:underline" title="Ganti password">{{ auth()->user()->name }}</a>
