@@ -27,7 +27,7 @@ class PlaceOrder
             }
         }
 
-        $products = Product::with('category')
+        $products = Product::with('category', 'ingredients')
             ->whereIn('id', array_column($items, 'product_id'))
             ->get()
             ->keyBy('id');
@@ -41,6 +41,8 @@ class PlaceOrder
                 ]);
             }
         }
+
+        $this->ensureStock($items, $products);
 
         return DB::transaction(function () use ($items, $products, $attributes, $voucher, $memberPhone) {
             if (filled($memberPhone)) {
@@ -88,5 +90,44 @@ class PlaceOrder
 
             return $order;
         });
+    }
+
+    /** Tolak pesanan bila stok bahan tidak cukup untuk seluruh isi keranjang. */
+    private function ensureStock(array $items, $products): void
+    {
+        $quantities = [];
+        foreach ($items as $item) {
+            $quantities[$item['product_id']] = ($quantities[$item['product_id']] ?? 0) + $item['quantity'];
+        }
+
+        foreach ($quantities as $productId => $quantity) {
+            $product = $products->get($productId);
+            $left = $product->servingsLeft();
+
+            if ($left !== null && $quantity > $left) {
+                throw ValidationException::withMessages([
+                    'items' => $left === 0
+                        ? "{$product->name} sedang habis."
+                        : "{$product->name} hanya tersisa {$left} porsi.",
+                ]);
+            }
+        }
+
+        // Beberapa menu bisa memakai bahan yang sama, jadi cek juga total kebutuhan per bahan.
+        $needs = [];
+        foreach ($quantities as $productId => $quantity) {
+            foreach ($products->get($productId)->ingredients as $ingredient) {
+                $needs[$ingredient->id] ??= ['ingredient' => $ingredient, 'qty' => 0];
+                $needs[$ingredient->id]['qty'] += $ingredient->pivot->quantity * $quantity;
+            }
+        }
+
+        foreach ($needs as ['ingredient' => $ingredient, 'qty' => $qty]) {
+            if ($qty > max($ingredient->stock, 0) + 1e-9) {
+                throw ValidationException::withMessages([
+                    'items' => "Stok {$ingredient->name} tidak cukup untuk semua pesanan ini. Kurangi jumlahnya ya.",
+                ]);
+            }
+        }
     }
 }

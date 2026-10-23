@@ -19,7 +19,7 @@ class CashierController extends Controller
     public function index(): View
     {
         $menu = Category::where('is_active', true)
-            ->with(['products' => fn ($q) => $q->where('is_available', true)->orderBy('sort_order')->orderBy('name')])
+            ->with(['products' => fn ($q) => $q->where('is_available', true)->with('ingredients')->orderBy('sort_order')->orderBy('name')])
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
@@ -34,6 +34,7 @@ class CashierController extends Controller
                     'price' => $product->price,
                     'image' => $product->image_url,
                     'group' => $category->group,
+                    'left' => $product->servingsLeft(),
                 ])->values(),
             ])->values();
 

@@ -64,8 +64,9 @@
                 <div class="mb-[1.4vw] break-inside-avoid">
                     <h3 class="mb-[.4vw] border-b-2 border-espresso-800 pb-[.2vw] text-[1.1vw] font-bold tracking-wider text-espresso-700 uppercase">{{ $category->name }}</h3>
                     @foreach ($category->products as $product)
-                        <div class="flex items-baseline gap-[.4vw] py-[.15vw] text-[1.1vw] {{ $product->is_available ? '' : 'line-through opacity-40' }}">
-                            <span class="font-medium">{{ $product->name }}</span>
+                        <div class="flex items-baseline gap-[.4vw] py-[.15vw] text-[1.1vw] {{ $product->isOrderable() ? '' : 'opacity-40' }}">
+                            <span class="font-medium {{ $product->isOrderable() ? '' : 'line-through' }}">{{ $product->name }}</span>
+                            @unless ($product->isOrderable())<span class="rounded bg-espresso-800 px-[.4vw] text-[.7vw] font-bold text-white no-underline">HABIS</span>@endunless
                             <span class="flex-1 border-b border-dotted border-espresso-200"></span>
                             <span class="font-semibold tabular-nums">{{ number_format($product->price / 1000, 0, ',', '.') }}k</span>
                         </div>

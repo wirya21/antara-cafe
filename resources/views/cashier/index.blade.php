@@ -57,7 +57,7 @@
             </div>
             <div class="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-3 overflow-y-auto p-5 md:grid-cols-3 xl:grid-cols-4">
                 <template x-for="p in products" :key="p.id">
-                    <button type="button" @click="add(p.id)" class="relative overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-espresso-100 transition hover:ring-espresso-500 active:scale-[.98]">
+                    <button type="button" @click="add(p.id)" :disabled="!canAdd(p.id)" class="relative overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-espresso-100 transition hover:ring-espresso-500 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">
                         <div class="aspect-[4/3] bg-espresso-100">
                             <template x-if="p.image"><img :src="p.image" alt="" class="h-full w-full object-cover"></template>
                             <template x-if="!p.image"><div class="grid h-full place-items-center text-4xl" x-text="placeholder(p.group)"></div></template>
@@ -66,6 +66,8 @@
                             <p class="truncate text-sm font-semibold" x-text="p.name"></p>
                             <p class="text-sm font-bold text-espresso-700" x-text="rupiah(p.price)"></p>
                         </div>
+                        <span x-show="p.left === 0" class="absolute top-2 left-2 rounded-full bg-espresso-900 px-2.5 py-1 text-xs font-bold text-white">Habis</span>
+                        <span x-show="p.left > 0 && p.left <= {{ \App\Models\Product::LOW_SERVINGS }}" x-text="'Sisa ' + p.left" class="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white"></span>
                         <span x-show="qtyOf(p.id)" x-text="qtyOf(p.id)" class="absolute top-2 right-2 grid h-7 min-w-7 place-items-center rounded-full bg-amber-400 px-2 text-sm font-bold"></span>
                     </button>
                 </template>
@@ -101,7 +103,7 @@
                                     </div>
                                     <button type="button" @click="change(i, -1)" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-100 font-bold">−</button>
                                     <span class="w-5 text-center font-bold" x-text="line.qty"></span>
-                                    <button type="button" @click="change(i, 1)" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-800 font-bold text-white">+</button>
+                                    <button type="button" @click="change(i, 1)" :disabled="!canAdd(line.id)" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-800 font-bold text-white disabled:opacity-30">+</button>
                                 </div>
                                 <input x-model="line.note" :name="`items[${i}][note]`" maxlength="120" placeholder="Catatan (opsional)" class="mt-2 w-full rounded-md border border-espresso-100 px-2 py-1 text-xs">
                                 <input type="hidden" :name="`items[${i}][product_id]`" :value="line.id">

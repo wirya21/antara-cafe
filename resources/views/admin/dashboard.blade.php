@@ -69,6 +69,35 @@
     </div>
 
     <div class="card mt-6 p-4 sm:p-6">
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold">Menu habis / hampir habis</h2>
+            <a href="{{ route('admin.ingredients.index') }}" class="text-sm text-espresso-700 hover:underline">Tambah stok →</a>
+        </div>
+        <p class="mt-1 text-xs text-espresso-600">Dihitung dari stok bahan dan resep. Menu ini otomatis tampil "Habis" di menu pelanggan, kasir, dan layar TV.</p>
+        <ul class="mt-3 divide-y divide-espresso-50 text-sm">
+            @forelse ($menuStock as $row)
+                <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <div class="min-w-0">
+                        <a href="{{ route('admin.products.edit', $row['product']) }}" class="font-medium hover:underline">{{ $row['product']->name }}</a>
+                        @if ($row['ingredient'])
+                            <p class="text-xs text-espresso-600">
+                                Bahan penyebab:
+                                <a href="{{ route('admin.ingredients.show', $row['ingredient']) }}" class="underline">{{ $row['ingredient']->name }}</a>
+                                (sisa <x-qty :value="max($row['ingredient']->stock, 0)" /> {{ $row['ingredient']->unit }}, butuh <x-qty :value="$row['ingredient']->pivot->quantity" /> per porsi)
+                            </p>
+                        @endif
+                    </div>
+                    <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {{ $row['left'] === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800' }}">
+                        {{ $row['left'] === 0 ? 'Habis' : 'Sisa '.$row['left'].' porsi' }}
+                    </span>
+                </li>
+            @empty
+                <li class="py-4 text-center text-espresso-500">✅ Semua menu masih bisa dibuat.</li>
+            @endforelse
+        </ul>
+    </div>
+
+    <div class="card mt-6 p-4 sm:p-6">
         <h2 class="font-semibold">Terlaris hari ini</h2>
         <ul class="mt-3 divide-y divide-espresso-50 text-sm">
             @forelse ($topToday as $product)

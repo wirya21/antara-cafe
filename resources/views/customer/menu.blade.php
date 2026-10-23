@@ -120,6 +120,8 @@
                                     </div>
                                 </template>
                                 <span x-show="!p.available" class="absolute inset-0 grid place-items-center bg-black/40 text-sm font-semibold text-white">Habis</span>
+                                <span x-show="p.available && p.left !== null && p.left <= {{ \App\Models\Product::LOW_SERVINGS }}" x-cloak
+                                      class="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-bold text-white shadow" x-text="'Sisa ' + p.left"></span>
                             </button>
                             <div class="flex flex-1 flex-col p-3 sm:p-4">
                                 <h3 class="text-sm leading-tight font-semibold sm:text-base" x-text="p.name"></h3>
@@ -140,8 +142,8 @@
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
                                             </button>
                                             <span class="min-w-6 text-center text-base font-bold tabular-nums text-espresso-900" x-text="qtyOf(p.id)"></span>
-                                            <button type="button" @click="add(p.id)" aria-label="Tambah satu lagi"
-                                                    class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-espresso-800 text-white shadow-sm transition active:scale-90">
+                                            <button type="button" @click="add(p.id)" aria-label="Tambah satu lagi" :disabled="!canAdd(p.id)"
+                                                    class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-espresso-800 text-white shadow-sm transition active:scale-90 disabled:opacity-30">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                                             </button>
                                         </div>
@@ -213,7 +215,7 @@
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
                                 </button>
                                 <span class="min-w-6 text-center text-sm font-bold tabular-nums" x-text="line.qty"></span>
-                                <button type="button" @click="changeLine(i, 1)" aria-label="Tambah" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-800 text-white active:scale-90">
+                                <button type="button" @click="changeLine(i, 1)" aria-label="Tambah" :disabled="!canAdd(line.id)" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-800 text-white active:scale-90 disabled:opacity-30">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                                 </button>
                             </div>
@@ -373,13 +375,15 @@
                     <p class="mt-2 text-sm text-espresso-600" x-text="detail.description"></p>
                     <label class="label mt-4" for="detail_note">Catatan <span class="font-normal text-espresso-500">(opsional)</span></label>
                     <input id="detail_note" x-model="detailNote" maxlength="120" class="input" placeholder="mis. less sugar, tanpa es">
-                    <div class="mt-5 flex items-center gap-4">
+                    <p x-show="detail.left !== null && detail.left <= {{ \App\Models\Product::LOW_SERVINGS }}" class="mt-4 text-sm font-semibold text-red-600"
+                   x-text="'Tinggal ' + detail.left + ' porsi hari ini' + (qtyOf(detail.id) ? ' (' + qtyOf(detail.id) + ' sudah di keranjang)' : '')"></p>
+                <div class="mt-5 flex items-center gap-4">
                         <div class="flex items-center gap-3 rounded-full bg-espresso-100 p-1.5">
                             <button type="button" @click="detailQty = Math.max(1, detailQty - 1)" class="grid h-9 w-9 place-items-center rounded-full bg-white text-lg font-bold">−</button>
                             <span class="min-w-6 text-center font-bold tabular-nums" x-text="detailQty"></span>
-                            <button type="button" @click="detailQty++" class="grid h-9 w-9 place-items-center rounded-full bg-espresso-800 text-lg font-bold text-white">+</button>
+                            <button type="button" @click="detailQty++" :disabled="!canAdd(detail.id, detailQty + 1)" class="grid h-9 w-9 place-items-center rounded-full bg-espresso-800 text-lg font-bold text-white disabled:opacity-30">+</button>
                         </div>
-                        <button type="button" @click="addDetail()" class="flex-1 rounded-2xl bg-espresso-800 py-3.5 font-semibold text-white hover:bg-espresso-700">
+                        <button type="button" @click="addDetail()" :disabled="!canAdd(detail.id, detailQty)" class="flex-1 rounded-2xl bg-espresso-800 py-3.5 font-semibold text-white hover:bg-espresso-700 disabled:opacity-40">
                             Tambah · <span x-text="rupiah(detail.price * detailQty)"></span>
                         </button>
                     </div>
