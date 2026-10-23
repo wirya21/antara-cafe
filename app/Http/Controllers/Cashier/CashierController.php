@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -39,13 +40,48 @@ class CashierController extends Controller
         return view('cashier.index', [
             'menu' => $menu,
             'pending' => $this->pendingOrders(),
+            'processing' => $this->processingOrders(),
             'paymentMethods' => Order::PAYMENT_METHODS,
         ]);
     }
 
     public function pending(): JsonResponse
     {
-        return response()->json($this->pendingOrders());
+        return response()->json(['pending' => $this->pendingOrders(), 'processing' => $this->processingOrders()]);
+    }
+
+    /** Ringkasan untuk lencana dan bunyi notifikasi di admin/kasir. */
+    public function alerts(): JsonResponse
+    {
+        $pending = Order::where('status', 'pending');
+
+        return response()->json([
+            'pending' => (clone $pending)->count(),
+            'latest' => (int) (clone $pending)->max('id'),
+            'proofs' => (clone $pending)->whereNotNull('payment_proof_path')->count(),
+        ]);
+    }
+
+    public function complete(Request $request, Order $order): RedirectResponse
+    {
+        $order->markCompleted();
+
+        return $this->backTo($request, $order)->with('status', "Pesanan {$order->code} selesai.");
+    }
+
+    /** Aksi ini dipakai dari halaman kasir dan dari detail transaksi admin. */
+    private function backTo(Request $request, Order $order): RedirectResponse
+    {
+        return $request->input('kembali') === 'admin' && $request->user()->isAdmin()
+            ? redirect()->route('admin.orders.show', $order)
+            : redirect()->route('cashier.index');
+    }
+
+    public function proof(Order $order)
+    {
+        abort_unless($order->payment_proof_path && Storage::disk('local')->exists($order->payment_proof_path), 404);
+
+        return Storage::disk('local')->response($order->payment_proof_path);
     }
 
     public function store(Request $request, PlaceOrder $placeOrder): RedirectResponse
@@ -90,8 +126,8 @@ class CashierController extends Controller
 
         $order->markPaid($data['payment_method'], $request->user());
 
-        return redirect()->route('cashier.index')
-            ->with('status', "Pesanan {$order->code} dibayar.")
+        return $this->backTo($request, $order)
+            ->with('status', "Pembayaran {$order->code} dikonfirmasi. Pesanan diteruskan untuk dibuat.")
             ->with('receipt', $order->code);
     }
 
@@ -101,7 +137,7 @@ class CashierController extends Controller
 
         $order->update(['status' => 'cancelled', 'cashier_id' => $request->user()->id]);
 
-        return redirect()->route('cashier.index')->with('status', "Pesanan {$order->code} dibatalkan.");
+        return $this->backTo($request, $order)->with('status', "Pesanan {$order->code} dibatalkan.");
     }
 
     public function receipt(Order $order): View
@@ -113,21 +149,36 @@ class CashierController extends Controller
 
     private function pendingOrders(): array
     {
-        return Order::where('status', 'pending')
-            ->with('items')
-            ->oldest()
-            ->get()
-            ->map(fn (Order $order) => [
-                'code' => $order->code,
-                'customer_name' => $order->customer_name,
-                'table_number' => $order->table_number,
-                'total' => $order->total,
-                'time' => $order->created_at->format('H:i'),
-                'items' => $order->items->map(fn ($item) => [
-                    'name' => $item->product_name,
-                    'quantity' => $item->quantity,
-                    'note' => $item->note,
-                ]),
-            ])->all();
+        return Order::where('status', 'pending')->with('items')->oldest()->get()
+            ->map(fn (Order $order) => $this->orderPayload($order))->all();
+    }
+
+    /** Sudah dibayar, belum diserahkan ke pelanggan. */
+    private function processingOrders(): array
+    {
+        return Order::where('status', 'paid')->whereNull('completed_at')
+            ->where('paid_at', '>=', now()->subDay())
+            ->with('items')->oldest('paid_at')->get()
+            ->map(fn (Order $order) => $this->orderPayload($order))->all();
+    }
+
+    private function orderPayload(Order $order): array
+    {
+        return [
+            'code' => $order->code,
+            'source' => $order->source,
+            'customer_name' => $order->customer_name,
+            'table_number' => $order->table_number,
+            'total' => $order->total,
+            'time' => ($order->paid_at ?? $order->created_at)->format('H:i'),
+            'payment_method' => $order->payment_method,
+            'payment_label' => Order::PAYMENT_METHODS[$order->payment_method] ?? null,
+            'proof_url' => $order->payment_proof_path ? route('cashier.proof', $order) : null,
+            'items' => $order->items->map(fn ($item) => [
+                'name' => $item->product_name,
+                'quantity' => $item->quantity,
+                'note' => $item->note,
+            ]),
+        ];
     }
 }

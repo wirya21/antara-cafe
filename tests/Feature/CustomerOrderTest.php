@@ -31,7 +31,7 @@ class CustomerOrderTest extends TestCase
     public function test_customer_can_place_order_without_login(): void
     {
         $response = $this->post('/menu/pesan', [
-            'customer_name' => 'Budi',
+            'customer_name' => 'Budi', 'payment_method' => 'tunai',
             'table_number' => '7',
             'items' => [['product_id' => $this->latte->id, 'quantity' => 2, 'note' => 'less sugar']],
         ]);
@@ -50,7 +50,7 @@ class CustomerOrderTest extends TestCase
     public function test_price_comes_from_database_not_request(): void
     {
         $this->post('/menu/pesan', [
-            'customer_name' => 'Budi',
+            'customer_name' => 'Budi', 'payment_method' => 'tunai',
             'items' => [['product_id' => $this->latte->id, 'quantity' => 1, 'price' => 1]],
         ]);
 
@@ -62,7 +62,7 @@ class CustomerOrderTest extends TestCase
         $this->latte->update(['is_available' => false]);
 
         $this->post('/menu/pesan', [
-            'customer_name' => 'Budi',
+            'customer_name' => 'Budi', 'payment_method' => 'tunai',
             'items' => [['product_id' => $this->latte->id, 'quantity' => 1]],
         ])->assertSessionHasErrors('items');
 

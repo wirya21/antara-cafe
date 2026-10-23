@@ -4,39 +4,141 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#2b1b0e">
-    @if ($order->status === 'pending')
-        <meta http-equiv="refresh" content="20">
-    @endif
     <title>Pesanan {{ $order->code }} · Antara Cafe</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-espresso-900 bg-[radial-gradient(circle_at_top,var(--color-espresso-700),var(--color-espresso-900)_55%)] px-4 py-10 font-sans text-espresso-900 antialiased">
+@php
+    $stage = $order->stage();
+    $method = $order->payment_method;
+@endphp
+<body class="min-h-screen bg-espresso-900 bg-[radial-gradient(circle_at_top,var(--color-espresso-700),var(--color-espresso-900)_55%)] px-4 pt-[max(2rem,env(safe-area-inset-top))] pb-10 font-sans text-espresso-900 antialiased">
     <script>try { localStorage.removeItem('antara-cart'); } catch (e) {}</script>
 
-    <div class="mx-auto max-w-md">
+    {{-- Muat ulang otomatis saat staf mengonfirmasi atau menyelesaikan pesanan. --}}
+    <div class="mx-auto max-w-md"
+         @if (in_array($stage, ['pending', 'processing']))
+             x-data="{ stage: @js($stage), proof: @js(filled($order->payment_proof_path)) }"
+             x-init="setInterval(async () => {
+                 try {
+                     const r = await fetch(@js(route('menu.order.status', $order)), { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                     if (!r.ok) return;
+                     const d = await r.json();
+                     if (d.stage !== stage || d.has_proof !== proof) window.location.reload();
+                 } catch (e) {}
+             }, 8000)"
+         @endif>
+
         <div class="text-center text-espresso-50">
             <div class="mx-auto grid h-20 w-20 place-items-center rounded-full bg-espresso-50 text-4xl shadow-xl">
-                {{ $order->status === 'paid' ? '✅' : ($order->status === 'cancelled' ? '✖️' : '🧾') }}
+                {{ ['pending' => '🧾', 'processing' => '👨‍🍳', 'completed' => '✅', 'cancelled' => '✖️'][$stage] }}
             </div>
             <h1 class="mt-5 font-display text-3xl font-semibold">
-                @switch($order->status)
-                    @case('paid') Terima kasih! @break
-                    @case('cancelled') Pesanan dibatalkan @break
-                    @default Pesanan terkirim!
-                @endswitch
+                {{ ['pending' => 'Selesaikan pembayaran', 'processing' => 'Pembayaran diterima!', 'completed' => 'Pesanan selesai', 'cancelled' => 'Pesanan dibatalkan'][$stage] }}
             </h1>
-            <p class="mt-2 text-espresso-200">
-                @if ($order->status === 'pending')
-                    Tunjukkan kode ini ke kasir untuk membayar.
-                @elseif ($order->status === 'paid')
-                    Pembayaran diterima. Pesanan Anda sedang disiapkan.
-                @else
-                    Silakan hubungi kasir bila ada pertanyaan.
-                @endif
+            <p class="mx-auto mt-2 max-w-xs text-espresso-200">
+                @switch($stage)
+                    @case('pending')
+                        @if ($method === 'tunai')
+                            Tunjukkan kode ini dan bayar tunai di kasir. Pesanan dibuat setelah dibayar.
+                        @elseif ($order->payment_proof_path)
+                            Bukti bayar sudah kami terima. Mohon tunggu, staf sedang mengecek.
+                        @else
+                            Bayar sesuai total di bawah, lalu unggah bukti pembayaran. Pesanan dibuat setelah dikonfirmasi.
+                        @endif
+                        @break
+                    @case('processing') Pesanan Anda sedang dibuat. Kami panggil nama Anda saat siap. @break
+                    @case('completed') Terima kasih sudah mampir ke Antara Cafe! @break
+                    @default Silakan hubungi kasir bila ada pertanyaan.
+                @endswitch
             </p>
         </div>
 
-        <div class="mt-8 overflow-hidden rounded-3xl bg-white shadow-2xl">
+        @if (session('status'))
+            <div class="mt-6 rounded-2xl bg-green-600 px-4 py-3 text-center text-sm font-semibold text-white">{{ session('status') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="mt-6 rounded-2xl bg-red-600 px-4 py-3 text-center text-sm font-semibold text-white">{{ $errors->first() }}</div>
+        @endif
+
+        {{-- Langkah pembayaran --}}
+        @if ($stage === 'pending')
+            <div class="mt-6 overflow-hidden rounded-3xl bg-white shadow-2xl">
+                <div class="flex items-center justify-between border-b border-espresso-100 px-5 py-4">
+                    <div>
+                        <p class="text-xs tracking-widest text-espresso-500 uppercase">Total bayar</p>
+                        <p class="font-display text-3xl font-semibold"><x-rupiah :value="$order->total" /></p>
+                    </div>
+                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">{{ \App\Models\Order::SELF_PAYMENT_METHODS[$method] ?? 'Belum dipilih' }}</span>
+                </div>
+
+                <div class="space-y-4 p-5">
+                    @if ($method === 'qris')
+                        @if ($qrisUrl)
+                            <div class="mx-auto max-w-[260px] overflow-hidden rounded-2xl bg-white p-2 ring-1 ring-espresso-100">
+                                <img src="{{ $qrisUrl }}" alt="QRIS Antara Cafe" class="w-full">
+                            </div>
+                            <p class="text-center text-sm text-espresso-600">Scan dengan aplikasi bank atau e-wallet, masukkan nominal <b><x-rupiah :value="$order->total" /></b>, lalu screenshot bukti bayarnya.</p>
+                            <a href="{{ $qrisUrl }}" download class="btn-ghost w-full">Simpan gambar QRIS</a>
+                        @else
+                            <p class="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">QRIS belum tersedia. Silakan pilih cara bayar lain di bawah atau bayar di kasir.</p>
+                        @endif
+                    @elseif ($method === 'transfer')
+                        @if (filled($bankAccounts))
+                            <div class="space-y-2">
+                                @foreach (preg_split('/\r\n|\r|\n/', trim($bankAccounts)) as $account)
+                                    @continue(blank($account))
+                                    <div x-data="{ copied: false }" class="flex items-center justify-between gap-3 rounded-xl bg-espresso-50 px-4 py-3">
+                                        <span class="text-sm font-semibold">{{ $account }}</span>
+                                        <button type="button" class="shrink-0 text-xs font-semibold text-espresso-700 underline"
+                                                @click="navigator.clipboard?.writeText(@js(preg_replace('/\D/', '', $account) ?: $account)).catch(() => {}); copied = true; setTimeout(() => copied = false, 1500)"
+                                                x-text="copied ? 'Tersalin ✓' : 'Salin'">Salin</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <p class="text-sm text-espresso-600">Transfer tepat <b><x-rupiah :value="$order->total" /></b>, lalu unggah bukti transfernya.</p>
+                        @else
+                            <p class="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Rekening transfer belum tersedia. Silakan pilih cara bayar lain di bawah atau bayar di kasir.</p>
+                        @endif
+                    @else
+                        <div class="rounded-2xl bg-espresso-50 p-4 text-center">
+                            <p class="text-sm text-espresso-700">Sebutkan kode pesanan ini di kasir:</p>
+                            <p class="mt-1 font-display text-4xl font-semibold tracking-wide">{{ $order->code }}</p>
+                        </div>
+                    @endif
+
+                    @if ($order->needsProof() && array_key_exists($method, $paymentMethods))
+                        <form method="POST" action="{{ route('menu.order.proof', $order) }}" enctype="multipart/form-data"
+                              x-data="{ name: '', sending: false }" @submit="sending = true" class="space-y-2">
+                            @csrf
+                            @if ($order->payment_proof_path)
+                                <p class="rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">✓ Bukti bayar terkirim. Salah kirim? Unggah ulang di bawah.</p>
+                            @endif
+                            <label class="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-espresso-200 px-4 py-4 text-sm font-semibold text-espresso-700 transition hover:border-espresso-500">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 20h16"/></svg>
+                                <span x-text="name || 'Pilih foto / screenshot bukti bayar'"></span>
+                                <input type="file" name="proof" accept="image/*" required class="sr-only" @change="name = $event.target.files[0]?.name || ''">
+                            </label>
+                            <button class="w-full rounded-2xl bg-espresso-800 py-3.5 font-semibold text-white transition hover:bg-espresso-700 disabled:opacity-50" :disabled="!name || sending">
+                                <span x-text="sending ? 'Mengirim…' : 'Kirim bukti pembayaran'"></span>
+                            </button>
+                        </form>
+                    @endif
+
+                    <details class="text-sm">
+                        <summary class="cursor-pointer text-center text-espresso-600 underline">Ganti cara pembayaran</summary>
+                        <form method="POST" action="{{ route('menu.order.method', $order) }}" class="mt-3 grid gap-2" style="grid-template-columns: repeat({{ count($paymentMethods) }}, minmax(0, 1fr))">
+                            @csrf
+                            @foreach ($paymentMethods as $value => $label)
+                                <button name="payment_method" value="{{ $value }}" @disabled($value === $method)
+                                        class="rounded-xl border border-espresso-200 px-2 py-2 text-xs font-semibold disabled:border-espresso-800 disabled:bg-espresso-800 disabled:text-white">{{ $label }}</button>
+                            @endforeach
+                        </form>
+                    </details>
+                </div>
+            </div>
+        @endif
+
+        <div class="mt-6 overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div class="border-b border-dashed border-espresso-200 p-6 text-center">
                 <p class="text-xs tracking-widest text-espresso-500 uppercase">Kode pesanan</p>
                 <p class="mt-1 font-display text-4xl font-semibold tracking-wide">{{ $order->code }}</p>
@@ -45,8 +147,8 @@
                     @if ($order->table_number) · Meja <b>{{ $order->table_number }}</b> @else · Dibawa pulang @endif
                 </p>
                 <span class="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold
-                    {{ ['pending' => 'bg-amber-100 text-amber-800', 'paid' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-gray-100 text-gray-600'][$order->status] }}">
-                    {{ \App\Models\Order::STATUSES[$order->status] }}
+                    {{ ['pending' => 'bg-amber-100 text-amber-800', 'processing' => 'bg-blue-100 text-blue-800', 'completed' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-gray-100 text-gray-600'][$stage] }}">
+                    {{ \App\Models\Order::STAGES[$stage] }}
                 </span>
             </div>
 
@@ -69,7 +171,9 @@
             </ul>
         </div>
 
-        <a href="{{ route('menu', array_filter(['meja' => $order->table_number])) }}" class="mt-6 block rounded-2xl border border-espresso-50/30 py-3.5 text-center font-semibold text-espresso-50 hover:bg-espresso-50/10">
+        <p class="mt-4 text-center text-xs text-espresso-300">Simpan halaman ini untuk memantau status pesanan Anda.</p>
+
+        <a href="{{ route('menu', array_filter(['meja' => $order->table_number])) }}" class="mt-4 block rounded-2xl border border-espresso-50/30 py-3.5 text-center font-semibold text-espresso-50 hover:bg-espresso-50/10">
             Pesan lagi
         </a>
     </div>

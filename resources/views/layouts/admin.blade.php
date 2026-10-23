@@ -18,6 +18,7 @@
             ['admin.promotions.index', 'Promo & voucher', 'admin.promotions.*'],
             ['admin.members.index', 'Member', 'admin.members.*'],
             ['admin.users.index', 'Akun', 'admin.users.*'],
+            ['admin.settings.edit', 'Pengaturan', 'admin.settings.*'],
             ['cashier.index', 'Buka kasir ↗', 'cashier.*'],
             ['menu', 'Lihat menu pelanggan ↗', 'menu'],
             ['display', 'Buka layar TV ↗', 'display'],
@@ -33,6 +34,7 @@
                 <p class="text-xs leading-none text-espresso-200">☕ Antara Cafe</p>
                 <p class="mt-1 truncate text-base leading-tight font-semibold">@yield('title')</p>
             </div>
+            <x-order-alerts :href="route('admin.orders.index', ['status' => 'pending', 'from' => now()->subDays(2)->toDateString()])" dark />
         </div>
 
         <div x-show="navOpen" x-cloak x-transition.opacity @click="navOpen = false" class="fixed inset-0 z-40 bg-black/50 md:hidden"></div>
@@ -67,6 +69,7 @@
             <header class="print:hidden hidden items-center justify-between border-b border-espresso-100 bg-white px-6 py-3 md:flex">
                 <h1 class="text-lg font-semibold">@yield('title')</h1>
                 <div class="flex items-center gap-3 text-sm">
+                    <x-order-alerts :href="route('admin.orders.index', ['status' => 'pending', 'from' => now()->subDays(2)->toDateString()])" />
                     <a href="{{ route('password.edit') }}" class="text-espresso-600 hover:underline" title="Ganti password">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

@@ -31,7 +31,7 @@ class CashierTest extends TestCase
         $this->post('/login', ['username' => $this->cashier->username, 'password' => 'rahasia123'])
             ->assertRedirect(route('cashier.index'));
 
-        $this->get('/kasir')->assertOk()->assertSee('Pesanan masuk');
+        $this->get('/kasir')->assertOk()->assertSee('Menunggu bayar');
     }
 
     public function test_guest_cannot_open_cashier(): void
@@ -59,22 +59,22 @@ class CashierTest extends TestCase
 
     public function test_cashier_sees_and_pays_customer_order(): void
     {
-        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
+        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
         $order = Order::firstOrFail();
 
         $this->actingAs($this->cashier)->getJson('/kasir/pesanan-masuk')
-            ->assertOk()->assertJsonPath('0.code', $order->code)->assertJsonPath('0.customer_name', 'Sari');
+            ->assertOk()->assertJsonPath('pending.0.code', $order->code)->assertJsonPath('pending.0.customer_name', 'Sari');
 
         $this->post(route('cashier.pay', $order), ['payment_method' => 'tunai'])->assertRedirect(route('cashier.index'));
 
         $this->assertSame('paid', $order->fresh()->status);
-        $this->getJson('/kasir/pesanan-masuk')->assertJsonCount(0);
+        $this->getJson('/kasir/pesanan-masuk')->assertJsonCount(0, 'pending')->assertJsonPath('processing.0.code', $order->code);
         $this->get(route('menu.order', $order))->assertSee('Dibayar');
     }
 
     public function test_paid_order_cannot_be_paid_or_cancelled_again(): void
     {
-        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
+        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
         $order = Order::firstOrFail();
 
         $this->actingAs($this->cashier)->post(route('cashier.pay', $order), ['payment_method' => 'tunai']);
@@ -86,7 +86,7 @@ class CashierTest extends TestCase
 
     public function test_cashier_can_cancel_pending_order(): void
     {
-        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
+        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
         $order = Order::firstOrFail();
 
         $this->actingAs($this->cashier)->post(route('cashier.cancel', $order))->assertRedirect();

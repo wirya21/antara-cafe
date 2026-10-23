@@ -7,7 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-espresso-50 font-sans text-espresso-900 antialiased">
-<div x-data="cashierApp(@js($menu), @js($pending), @js(route('cashier.pending')))" class="flex h-screen flex-col">
+<div x-data="cashierApp(@js($menu), @js($pending), @js($processing), @js(route('cashier.pending')))" class="flex h-screen flex-col">
 
     <header class="flex items-center justify-between gap-4 bg-espresso-900 px-5 py-3 text-espresso-50">
         <div class="flex items-center gap-3">
@@ -18,6 +18,7 @@
             </div>
         </div>
         <div class="flex items-center gap-2 text-sm">
+            <x-order-alerts :href="route('cashier.index')" dark />
             @if (auth()->user()->isAdmin())
                 <a href="{{ route('admin.dashboard') }}" class="rounded-lg px-3 py-1.5 hover:bg-espresso-800">Panel admin</a>
             @endif
@@ -73,11 +74,15 @@
 
         {{-- Panel kanan --}}
         <aside class="flex w-[380px] shrink-0 flex-col border-l border-espresso-100 bg-white xl:w-[420px]">
-            <div class="grid grid-cols-2 border-b border-espresso-100 text-sm font-semibold">
-                <button type="button" @click="tab = 'baru'" class="py-3" :class="tab === 'baru' ? 'border-b-2 border-espresso-800 text-espresso-900' : 'text-espresso-500'">Pesanan baru</button>
+            <div class="grid grid-cols-3 border-b border-espresso-100 text-sm font-semibold">
+                <button type="button" @click="tab = 'baru'" class="py-3" :class="tab === 'baru' ? 'border-b-2 border-espresso-800 text-espresso-900' : 'text-espresso-500'">Kasir</button>
                 <button type="button" @click="tab = 'masuk'; newArrivals = false" class="relative py-3" :class="tab === 'masuk' ? 'border-b-2 border-espresso-800 text-espresso-900' : 'text-espresso-500'">
-                    Pesanan masuk
+                    Menunggu bayar
                     <span x-show="pending.length" x-text="pending.length" class="ml-1 rounded-full bg-amber-400 px-2 py-0.5 text-xs text-espresso-900" :class="newArrivals && 'animate-pulse'"></span>
+                </button>
+                <button type="button" @click="tab = 'dibuat'" class="py-3" :class="tab === 'dibuat' ? 'border-b-2 border-espresso-800 text-espresso-900' : 'text-espresso-500'">
+                    Dibuat
+                    <span x-show="processing.length" x-text="processing.length" class="ml-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800"></span>
                 </button>
             </div>
 
@@ -132,12 +137,12 @@
                 </div>
             </form>
 
-            {{-- Pesanan masuk dari pelanggan --}}
+            {{-- Pesanan pelanggan yang menunggu pembayaran --}}
             <div x-show="tab === 'masuk'" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-espresso-50 p-4">
-                <p x-show="!pending.length" class="py-16 text-center text-sm text-espresso-500">Belum ada pesanan dari pelanggan.</p>
+                <p x-show="!pending.length" class="py-16 text-center text-sm text-espresso-500">Tidak ada pesanan yang menunggu pembayaran.</p>
                 <template x-for="o in pending" :key="o.code">
-                    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-espresso-100">
-                        <div class="flex items-start justify-between">
+                    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1" :class="o.proof_url ? 'ring-blue-300' : 'ring-espresso-100'">
+                        <div class="flex items-start justify-between gap-2">
                             <div>
                                 <p class="font-display text-xl font-semibold" x-text="o.code"></p>
                                 <p class="text-sm text-espresso-600">
@@ -146,7 +151,10 @@
                                     <span x-text="o.time"></span>
                                 </p>
                             </div>
-                            <p class="font-bold" x-text="rupiah(o.total)"></p>
+                            <div class="text-right">
+                                <p class="font-bold" x-text="rupiah(o.total)"></p>
+                                <span x-show="o.payment_label" class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800" x-text="o.payment_label"></span>
+                            </div>
                         </div>
                         <ul class="mt-2 space-y-0.5 text-sm">
                             <template x-for="item in o.items">
@@ -154,18 +162,52 @@
                                     <span x-show="item.note" class="text-xs text-espresso-500" x-text="'(' + item.note + ')'"></span></li>
                             </template>
                         </ul>
+                        <a x-show="o.proof_url" :href="o.proof_url" target="_blank" class="mt-3 flex items-center gap-3 rounded-xl bg-blue-50 p-2 text-sm font-semibold text-blue-800">
+                            <img :src="o.proof_url" alt="" class="h-14 w-14 rounded-lg object-cover">
+                            Bukti bayar masuk · cek mutasi lalu konfirmasi
+                        </a>
                         <form method="POST" :action="`{{ url('kasir/pesanan') }}/${o.code}/bayar`" class="mt-3 flex gap-2">
                             @csrf
-                            <select name="payment_method" class="input py-1.5">
+                            <select name="payment_method" class="input py-1.5" x-init="$el.value = o.payment_method || 'tunai'">
                                 @foreach ($paymentMethods as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <button class="btn-primary">Bayar</button>
+                            <button class="btn-primary whitespace-nowrap">✓ Konfirmasi bayar</button>
                         </form>
-                        <form method="POST" :action="`{{ url('kasir/pesanan') }}/${o.code}/batal`" onsubmit="return confirm('Batalkan pesanan ini?')" class="mt-1 text-right">
+                        <form method="POST" :action="`{{ url('kasir/pesanan') }}/${o.code}/batal`" onsubmit="return confirm('Tolak dan batalkan pesanan ini?')" class="mt-1 text-right">
                             @csrf
-                            <button class="text-xs text-red-700 hover:underline">Batalkan</button>
+                            <button class="text-xs text-red-700 hover:underline">Tolak / batalkan</button>
+                        </form>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Sudah dibayar, sedang dibuat --}}
+            <div x-show="tab === 'dibuat'" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-espresso-50 p-4">
+                <p x-show="!processing.length" class="py-16 text-center text-sm text-espresso-500">Tidak ada pesanan yang sedang dibuat.</p>
+                <template x-for="o in processing" :key="o.code">
+                    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-espresso-100">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <p class="font-display text-xl font-semibold" x-text="o.code"></p>
+                                <p class="text-sm text-espresso-600">
+                                    <span x-text="o.customer_name || 'Tanpa nama'"></span> ·
+                                    <span x-text="o.table_number ? 'Meja ' + o.table_number : 'Bawa pulang'"></span> ·
+                                    dibayar <span x-text="o.time"></span>
+                                </p>
+                            </div>
+                            <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800" x-text="'Lunas · ' + (o.payment_label || '')"></span>
+                        </div>
+                        <ul class="mt-2 space-y-0.5 text-sm">
+                            <template x-for="item in o.items">
+                                <li><b x-text="item.quantity + '×'"></b> <span x-text="item.name"></span>
+                                    <span x-show="item.note" class="text-xs text-espresso-500" x-text="'(' + item.note + ')'"></span></li>
+                            </template>
+                        </ul>
+                        <form method="POST" :action="`{{ url('kasir/pesanan') }}/${o.code}/selesai`" class="mt-3">
+                            @csrf
+                            <button class="btn-primary w-full">Selesai / sudah diserahkan</button>
                         </form>
                     </div>
                 </template>

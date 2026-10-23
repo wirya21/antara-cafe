@@ -13,6 +13,7 @@ export default (menu, initial = {}) => ({
     detailNote: '',
     customerName: initial.customerName ?? '',
     tableNumber: initial.tableNumber ?? '',
+    paymentMethod: initial.paymentMethod ?? '',
     submitting: false,
     bump: false,
     autoPromos: initial.autoPromos ?? [],
@@ -108,7 +109,7 @@ export default (menu, initial = {}) => ({
         if (!code) return;
 
         try {
-            const response = await fetch(this.voucherUrl + '?code=' + encodeURIComponent(code), { headers: { Accept: 'application/json' } });
+            const response = await fetch(this.voucherUrl + '?code=' + encodeURIComponent(code), { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await response.json();
             if (!response.ok) {
                 this.voucherError = data.message ?? 'Kode voucher tidak berlaku.';

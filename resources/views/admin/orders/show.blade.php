@@ -42,7 +42,12 @@
 
         <div class="space-y-4">
             <div class="card space-y-2 p-5 text-sm">
-                <p><span class="text-espresso-600">Status:</span> <b>{{ \App\Models\Order::STATUSES[$order->status] }}</b></p>
+                @php $stage = $order->stage(); @endphp
+                <p><span class="text-espresso-600">Status:</span>
+                    <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold {{ ['pending' => 'bg-amber-100 text-amber-800', 'processing' => 'bg-blue-100 text-blue-800', 'completed' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-gray-100 text-gray-600'][$stage] }}">{{ \App\Models\Order::STAGES[$stage] }}</span></p>
+                @if ($order->status === 'pending' && $order->payment_method)
+                    <p><span class="text-espresso-600">Pilihan bayar pelanggan:</span> <b>{{ \App\Models\Order::PAYMENT_METHODS[$order->payment_method] ?? $order->payment_method }}</b></p>
+                @endif
                 <p><span class="text-espresso-600">Dibuat:</span> {{ $order->created_at->format('d/m/Y H:i') }}</p>
                 <p><span class="text-espresso-600">Sumber:</span> {{ $order->source === 'self_order' ? 'Pelanggan (QR)' : 'Kasir' }}</p>
                 <p><span class="text-espresso-600">Pelanggan:</span> {{ $order->customer_name ?: '-' }} @if ($order->table_number)· Meja {{ $order->table_number }}@endif</p>
@@ -55,6 +60,47 @@
                     <p class="rounded-lg bg-red-50 p-2 text-red-800">Di-void {{ $order->voided_at->format('d/m/Y H:i') }} oleh {{ $voidedBy?->name }}: {{ $order->void_reason }}</p>
                 @endif
             </div>
+
+            @if ($order->payment_proof_path)
+                <div class="card space-y-2 p-5">
+                    <p class="text-sm font-semibold">Bukti pembayaran dari pelanggan</p>
+                    <a href="{{ route('cashier.proof', $order) }}" target="_blank" class="block overflow-hidden rounded-lg ring-1 ring-espresso-100">
+                        <img src="{{ route('cashier.proof', $order) }}" alt="Bukti pembayaran {{ $order->code }}" class="max-h-80 w-full object-contain bg-espresso-50">
+                    </a>
+                    <p class="text-xs text-espresso-600">Cocokkan nominal <b><x-rupiah :value="$order->total" /></b> dengan mutasi QRIS/rekening sebelum konfirmasi.</p>
+                </div>
+            @endif
+
+            @if ($order->status === 'pending')
+                <div class="card space-y-3 border-amber-200 bg-amber-50/60 p-5">
+                    <p class="text-sm font-semibold">Pesanan ini belum dibayar</p>
+                    <p class="text-xs text-espresso-600">Pesanan baru diteruskan ke dapur setelah pembayaran dikonfirmasi. Tunai hanya diterima langsung di kasir.</p>
+                    <form method="POST" action="{{ route('cashier.pay', $order) }}" class="space-y-2">
+                        @csrf
+                        <input type="hidden" name="kembali" value="admin">
+                        <select name="payment_method" class="input">
+                            @foreach (\App\Models\Order::PAYMENT_METHODS as $value => $label)
+                                <option value="{{ $value }}" @selected($order->payment_method === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <button class="btn-primary w-full py-2.5">✓ Konfirmasi pembayaran</button>
+                    </form>
+                    <form method="POST" action="{{ route('cashier.cancel', $order) }}" onsubmit="return confirm('Tolak dan batalkan pesanan ini?')">
+                        @csrf
+                        <input type="hidden" name="kembali" value="admin">
+                        <button class="btn-danger w-full">Tolak / batalkan pesanan</button>
+                    </form>
+                </div>
+            @endif
+
+            @if ($order->stage() === 'processing')
+                <form method="POST" action="{{ route('cashier.complete', $order) }}" class="card space-y-2 p-5">
+                    @csrf
+                        <input type="hidden" name="kembali" value="admin">
+                    <p class="text-sm font-semibold">Sedang dibuat</p>
+                    <button class="btn-primary w-full py-2.5">Tandai selesai / sudah diserahkan</button>
+                </form>
+            @endif
 
             @if ($order->status === 'paid')
                 <a href="{{ route('cashier.receipt', $order) }}" target="_blank" class="btn-ghost w-full">🖨 Cetak ulang struk</a>
