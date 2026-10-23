@@ -29,7 +29,7 @@ class PromotionTest extends TestCase
 
     private function order(int $qty, array $extra = []): \Illuminate\Testing\TestResponse
     {
-        return $this->post('/menu/pesan', ['customer_name' => 'Sari', 'items' => [['product_id' => $this->latte->id, 'quantity' => $qty]], ...$extra]);
+        return $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => $qty]], ...$extra]);
     }
 
     public function test_admin_creates_voucher_with_banner(): void

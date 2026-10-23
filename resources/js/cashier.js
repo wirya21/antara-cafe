@@ -1,8 +1,9 @@
 const rupiah = (value) => 'Rp' + Number(value).toLocaleString('id-ID');
 
-export default (menu, pending, pendingUrl) => ({
+export default (menu, pending, processing, pendingUrl) => ({
     menu,
     pending,
+    processing,
     search: '',
     activeCategory: null,
     cart: [],
@@ -17,12 +18,13 @@ export default (menu, pending, pendingUrl) => ({
 
     async refreshPending() {
         try {
-            const response = await fetch(pendingUrl, { headers: { Accept: 'application/json' } });
+            const response = await fetch(pendingUrl, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
             if (!response.ok) return;
             const fresh = await response.json();
             const known = new Set(this.pending.map((o) => o.code));
-            if (fresh.some((o) => !known.has(o.code)) && this.tab !== 'masuk') this.newArrivals = true;
-            this.pending = fresh;
+            if (fresh.pending.some((o) => !known.has(o.code)) && this.tab !== 'masuk') this.newArrivals = true;
+            this.pending = fresh.pending;
+            this.processing = fresh.processing;
         } catch {}
     },
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -22,6 +23,9 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::post('/menu/pesan', [MenuController::class, 'store'])->middleware('throttle:10,1')->name('menu.store');
 Route::get('/menu/voucher', [MenuController::class, 'voucher'])->middleware('throttle:30,1')->name('menu.voucher');
 Route::get('/menu/pesanan/{order}', [MenuController::class, 'show'])->name('menu.order');
+Route::get('/menu/pesanan/{order}/status', [MenuController::class, 'status'])->middleware('throttle:60,1')->name('menu.order.status');
+Route::post('/menu/pesanan/{order}/metode', [MenuController::class, 'changeMethod'])->middleware('throttle:10,1')->name('menu.order.method');
+Route::post('/menu/pesanan/{order}/bukti', [MenuController::class, 'uploadProof'])->middleware('throttle:10,1')->name('menu.order.proof');
 Route::get('/layar', DisplayController::class)->name('display');
 
 Route::middleware('guest')->group(function () {
@@ -55,11 +59,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::resource('stok', IngredientController::class)->names('ingredients')->parameters(['stok' => 'ingredient']);
     Route::post('stok/{ingredient}/catat', [IngredientController::class, 'move'])->name('ingredients.move');
+
+    Route::get('pengaturan', [SettingController::class, 'edit'])->name('settings.edit');
+    Route::put('pengaturan', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('pengaturan/tes-whatsapp', [SettingController::class, 'testWhatsApp'])->name('settings.whatsapp-test');
 });
 
 Route::middleware(['auth', 'staff'])->prefix('kasir')->name('cashier.')->group(function () {
     Route::get('/', [CashierController::class, 'index'])->name('index');
     Route::get('/pesanan-masuk', [CashierController::class, 'pending'])->name('pending');
+    Route::get('/notifikasi', [CashierController::class, 'alerts'])->name('alerts');
+    Route::post('/pesanan/{order}/selesai', [CashierController::class, 'complete'])->name('complete');
+    Route::get('/pesanan/{order}/bukti', [CashierController::class, 'proof'])->name('proof');
     Route::post('/pesanan', [CashierController::class, 'store'])->name('store');
     Route::post('/pesanan/{order}/bayar', [CashierController::class, 'pay'])->name('pay');
     Route::post('/pesanan/{order}/batal', [CashierController::class, 'cancel'])->name('cancel');

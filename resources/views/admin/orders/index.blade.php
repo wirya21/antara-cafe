@@ -76,11 +76,15 @@
                         <td class="px-4 py-2.5">{{ $order->source === 'self_order' ? 'Pelanggan' : 'Kasir' }}</td>
                         <td class="px-4 py-2.5">{{ $order->items_count }}</td>
                         <td class="px-4 py-2.5 text-right font-semibold tabular-nums"><x-rupiah :value="$order->total" /></td>
-                        <td class="px-4 py-2.5">{{ \App\Models\Order::PAYMENT_METHODS[$order->payment_method] ?? '-' }}</td>
+                        <td class="px-4 py-2.5">{{ \App\Models\Order::PAYMENT_METHODS[$order->payment_method] ?? '-' }}@if ($order->status === 'pending' && $order->payment_method)<span class="block text-xs text-espresso-500">pilihan pelanggan</span>@endif</td>
                         <td class="px-4 py-2.5">
-                            <span class="rounded-full px-2 py-0.5 text-xs {{ ['pending' => 'bg-amber-100 text-amber-800', 'paid' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-gray-100 text-gray-600'][$order->status] ?? '' }}">
-                                {{ \App\Models\Order::STATUSES[$order->status] ?? $order->status }}
+                            @php $stage = $order->stage(); @endphp
+                            <span class="rounded-full px-2 py-0.5 text-xs whitespace-nowrap {{ ['pending' => 'bg-amber-100 text-amber-800', 'processing' => 'bg-blue-100 text-blue-800', 'completed' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-gray-100 text-gray-600'][$stage] }}">
+                                {{ \App\Models\Order::STAGES[$stage] }}
                             </span>
+                            @if ($order->payment_proof_path && $order->status === 'pending')
+                                <span class="ml-1 rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">ada bukti</span>
+                            @endif
                         </td>
                     </tr>
                 @empty

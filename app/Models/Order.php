@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['code', 'source', 'status', 'customer_name', 'table_number', 'member_id', 'promotion_id', 'cashier_id', 'subtotal', 'discount', 'total', 'payment_method', 'paid_at', 'void_reason', 'voided_by', 'voided_at'])]
+#[Fillable(['code', 'source', 'status', 'customer_name', 'table_number', 'member_id', 'promotion_id', 'cashier_id', 'subtotal', 'discount', 'total', 'payment_method', 'payment_proof_path', 'paid_at', 'completed_at', 'void_reason', 'voided_by', 'voided_at'])]
 class Order extends Model
 {
     public const STATUSES = [
-        'pending' => 'Menunggu kasir',
+        'pending' => 'Menunggu pembayaran',
         'paid' => 'Dibayar',
         'cancelled' => 'Dibatalkan',
     ];
@@ -37,18 +37,65 @@ class Order extends Model
         'kartu' => 'Kartu debit/kredit',
     ];
 
+    /** Pilihan bayar untuk pelanggan yang memesan sendiri. Tunai hanya diterima di kasir. */
+    public const SELF_PAYMENT_METHODS = [
+        'tunai' => 'Tunai di kasir',
+        'qris' => 'QRIS',
+        'transfer' => 'Transfer bank',
+    ];
+
+    /** Pilihan bayar yang benar-benar bisa dipakai: QRIS/transfer hanya bila sudah diisi di Pengaturan. */
+    public static function availableSelfPaymentMethods(): array
+    {
+        return array_filter(self::SELF_PAYMENT_METHODS, fn ($label, $method) => match ($method) {
+            'qris' => filled(Setting::get('qris_image_path')),
+            'transfer' => filled(Setting::get('bank_accounts')),
+            default => true,
+        }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /** Tahap pesanan untuk tampilan: menunggu bayar, sedang dibuat, selesai, batal. */
+    public function stage(): string
+    {
+        return match (true) {
+            $this->status === 'pending' => 'pending',
+            $this->status === 'paid' && $this->completed_at === null => 'processing',
+            $this->status === 'paid' => 'completed',
+            default => 'cancelled',
+        };
+    }
+
+    public const STAGES = [
+        'pending' => 'Menunggu pembayaran',
+        'processing' => 'Dibayar · sedang dibuat',
+        'completed' => 'Selesai',
+        'cancelled' => 'Dibatalkan',
+    ];
+
+    public function needsProof(): bool
+    {
+        return $this->status === 'pending' && in_array($this->payment_method, ['qris', 'transfer'], true);
+    }
+
+    public function markCompleted(): void
+    {
+        abort_unless($this->status === 'paid', 409, 'Pesanan belum dibayar.');
+
+        $this->update(['completed_at' => now()]);
+    }
+
     public function markPaid(string $paymentMethod, User $cashier): void
     {
         DB::transaction(function () use ($paymentMethod, $cashier) {
-            // Cegah dua kasir membayar pesanan yang sama bersamaan.
-            $updated = static::whereKey($this->id)->where('status', '!=', 'paid')->update([
+            // Cegah dua kasir membayar pesanan yang sama bersamaan, dan pesanan batal ikut terbayar.
+            $updated = static::whereKey($this->id)->where('status', 'pending')->update([
                 'status' => 'paid',
                 'payment_method' => $paymentMethod,
                 'cashier_id' => $cashier->id,
                 'paid_at' => now(),
             ]);
 
-            abort_if($updated === 0, 409, 'Pesanan ini sudah dibayar.');
+            abort_if($updated === 0, 409, 'Pesanan ini sudah dibayar atau dibatalkan.');
 
             $this->refresh();
             app(Inventory::class)->recordSale($this);
@@ -79,6 +126,7 @@ class Order extends Model
     {
         return [
             'paid_at' => 'datetime',
+            'completed_at' => 'datetime',
             'voided_at' => 'datetime',
         ];
     }

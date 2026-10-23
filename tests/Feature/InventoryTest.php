@@ -81,7 +81,7 @@ class InventoryTest extends TestCase
         $this->setRecipe();
         $this->post('/logout');
 
-        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
+        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
         $this->assertEquals(1000, $this->coffee->fresh()->stock);
 
         $this->actingAs($this->admin)->post(route('cashier.pay', Order::first()), ['payment_method' => 'qris']);

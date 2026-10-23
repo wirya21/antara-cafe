@@ -13,6 +13,7 @@
         'customerName' => old('customer_name', ''),
         'memberPhone' => old('member_phone', ''),
         'voucherCode' => old('voucher_code', ''),
+        'paymentMethod' => old('payment_method', ''),
         'openCart' => $errors->any(),
         'autoPromos' => $autoPromos,
         'voucherUrl' => route('menu.voucher'),
@@ -37,7 +38,7 @@
             <h1 class="mt-6 max-w-md font-display text-3xl leading-tight font-semibold sm:text-4xl">
                 Mau ngopi apa hari ini?
             </h1>
-            <p class="mt-2 text-sm text-espresso-200">Pilih menu, kirim pesanan, bayar di kasir. Tanpa daftar, tanpa login.</p>
+            <p class="mt-2 text-sm text-espresso-200">Pilih menu, bayar lewat QRIS, transfer, atau tunai di kasir. Tanpa daftar, tanpa login.</p>
 
             <label class="mt-6 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-espresso-900 shadow-lg shadow-black/20">
                 <svg class="h-5 w-5 text-espresso-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -236,6 +237,27 @@
                         <label for="member_phone" class="label">No. HP <span class="font-normal text-espresso-500">(opsional, untuk kumpulkan poin member)</span></label>
                         <input id="member_phone" name="member_phone" x-model="memberPhone" inputmode="tel" maxlength="20" class="input py-2.5" placeholder="08…">
                     </div>
+                    <fieldset>
+                        <legend class="label">Cara pembayaran</legend>
+                        <div class="grid gap-2" style="grid-template-columns: repeat({{ count($paymentMethods) }}, minmax(0, 1fr))">
+                            @foreach (array_intersect_key([
+                                'qris' => ['QRIS', 'Scan & bayar', 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2'],
+                                'transfer' => ['Transfer', 'Rekening bank', 'M3 10h18M5 10V8l7-4 7 4v2M6 10v8m4-8v8m4-8v8m4-8v8M3 20h18'],
+                                'tunai' => ['Tunai', 'Bayar di kasir', 'M3 7h18v10H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z'],
+                            ], $paymentMethods) as $value => [$title, $hint, $icon])
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="{{ $value }}" x-model="paymentMethod" required class="peer sr-only">
+                                    <span class="flex h-full flex-col items-center gap-1 rounded-2xl border-2 border-espresso-100 px-2 py-3 text-center transition peer-checked:border-espresso-800 peer-checked:bg-espresso-50 peer-focus-visible:ring-2 peer-focus-visible:ring-espresso-300">
+                                        <svg class="h-6 w-6 text-espresso-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="{{ $icon }}"/></svg>
+                                        <span class="text-sm font-semibold">{{ $title }}</span>
+                                        <span class="text-[11px] leading-tight text-espresso-500">{{ $hint }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <p x-show="paymentMethod === 'tunai'" x-cloak class="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">Pembayaran tunai hanya diterima langsung di kasir. Pesanan dibuat setelah Anda membayar.</p>
+                        <p x-show="paymentMethod && paymentMethod !== 'tunai'" x-cloak class="mt-2 rounded-xl bg-espresso-50 px-3 py-2 text-xs text-espresso-700">Setelah mengirim pesanan, Anda akan melihat <span x-text="paymentMethod === 'qris' ? 'kode QRIS' : 'nomor rekening'"></span> dan bisa mengunggah bukti bayar.</p>
+                    </fieldset>
                     <div>
                         <label for="voucher_code" class="label">Kode voucher</label>
                         <div class="flex gap-2">
@@ -256,11 +278,11 @@
                     <span class="text-espresso-600">Total</span>
                     <span class="font-display text-2xl font-semibold" x-text="rupiah(total)"></span>
                 </div>
-                <button type="submit" :disabled="!cart.length || submitting"
+                <button type="submit" :disabled="!cart.length || !paymentMethod || submitting"
                         class="mt-3 w-full rounded-2xl bg-espresso-800 py-4 font-semibold text-white shadow-lg shadow-espresso-900/20 transition hover:bg-espresso-700 disabled:opacity-40">
-                    <span x-text="submitting ? 'Mengirim…' : 'Kirim pesanan'"></span>
+                    <span x-text="submitting ? 'Mengirim…' : (paymentMethod ? 'Kirim pesanan & bayar' : 'Pilih cara pembayaran')"></span>
                 </button>
-                <p class="mt-2 text-center text-xs text-espresso-500">Pembayaran dilakukan di kasir.</p>
+                <p class="mt-2 text-center text-xs text-espresso-500">Pesanan dibuat setelah pembayaran dikonfirmasi.</p>
             </div>
         </form>
     </aside>
