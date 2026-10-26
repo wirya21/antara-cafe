@@ -11,32 +11,7 @@
     @vite(['resources/css/app.css'])
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 antialiased">
-    @php
-        $demo = $showcase[0]['url'] ?? url('/');
-        $features = [
-            ['📱', 'Pesan lewat QR', 'Pelanggan scan QR di meja, pilih menu, bayar QRIS, transfer, atau tunai. Tanpa unduh aplikasi, tanpa daftar.'],
-            ['🧾', 'Kasir cepat', 'Pesanan langsung di layar kasir. Struk bisa dicetak, lengkap dengan QR untuk cek status pesanan.'],
-            ['🔔', 'Papan pesanan', 'Masuk, diproses, selesai. Geser tombol hijau saat pesanan siap, HP pelanggan langsung berbunyi.'],
-            ['🥛', 'Stok bahan otomatis', 'Setiap penjualan memotong bahan sesuai resep. Menu berlabel "Habis" sendiri saat bahannya kurang.'],
-            ['📊', 'HPP & laba bersih', 'Hitung harga pokok dari resep plus gaji, listrik, sewa, dan bensin. Atur harga jual dari margin yang Anda mau.'],
-            ['🎟️', 'Promo & voucher', 'Kartu promo di menu, popup promo, kode voucher, dan poin member tanpa kartu fisik.'],
-            ['📺', 'Layar TV menu', 'Tampilkan menu andalan dan promo di TV kafe. Ikut berubah saat menu habis.'],
-            ['💬', 'Notifikasi WhatsApp', 'Setiap pesanan baru dari pelanggan juga dikirim ke WhatsApp pemilik atau kasir.'],
-        ];
-        $reasons = [
-            ['Ringan di HP murah', 'Halaman kecil dan cepat, tetap lancar di HP Android biasa dan sinyal pas-pasan.'],
-            ['Uang langsung ke Anda', 'Pembayaran masuk ke QRIS atau rekening kafe Anda sendiri, bukan ditahan pihak ketiga.'],
-            ['Pelanggan tanpa repot', 'Tidak ada aplikasi untuk diunduh dan tidak perlu membuat akun. Riwayat pesanan tersimpan di HP mereka.'],
-            ['Bahasa Indonesia', 'Dibuat untuk kafe di Indonesia: rupiah, QRIS, transfer bank, dan istilah yang dipakai sehari-hari.'],
-        ];
-        $faqs = [
-            ['Apakah pelanggan harus install aplikasi?', 'Tidak. Pelanggan cukup scan QR dan memesan dari browser HP. Mereka juga tidak perlu mendaftar.'],
-            ['Perangkat apa yang dibutuhkan kafe?', 'HP, tablet, atau laptop dengan browser untuk kasir. Printer struk dan TV bersifat pilihan.'],
-            ['Bagaimana dengan pembayaran QRIS?', 'Anda memasang gambar QRIS milik kafe sendiri. Pelanggan mengirim bukti bayar, kasir mencocokkan, lalu pesanan diteruskan ke dapur.'],
-            ['Apakah menu dan tampilan bisa diubah sendiri?', 'Bisa. Foto menu, harga, resep, promo, gambar halaman depan, sampai warna tema diatur dari panel admin.'],
-            ['Kafe saya akan punya alamat sendiri?', 'Ya, misalnya namakafe.kafehub.id, seperti antara.kafehub.id.'],
-        ];
-    @endphp
+    @php $demo = $showcase[0]['url'] ?? url('/'); @endphp
 
     {{-- Navigasi --}}
     <header class="sticky top-0 z-30 border-b border-gray-100 bg-white/95 backdrop-blur">
@@ -49,7 +24,7 @@
                 <a href="#fitur" class="hover:text-gray-900">Fitur</a>
                 <a href="#cara" class="hover:text-gray-900">Cara mulai</a>
                 <a href="#dipakai" class="hover:text-gray-900">Sudah dipakai</a>
-                <a href="#tanya" class="hover:text-gray-900">Tanya jawab</a>
+                @if ($c['faqs'])<a href="#tanya" class="hover:text-gray-900">Tanya jawab</a>@endif
             </nav>
             @if ($joinUrl)
                 <a href="{{ $joinUrl }}" target="_blank" rel="noopener" class="rounded-full bg-brand-500 px-5 py-2 text-sm font-bold text-white shadow-md shadow-brand-500/30 hover:bg-brand-600">Gabung</a>
@@ -66,14 +41,13 @@
         <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
             <div>
                 <p class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 ring-1 ring-brand-100">
-                    <span class="h-2 w-2 rounded-full bg-green-500"></span> Sudah berjalan di Antara Cafe
+                    <span class="h-2 w-2 rounded-full bg-green-500"></span> {{ $c['hero_badge'] }}
                 </p>
                 <h1 class="mt-5 text-4xl leading-[1.08] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-                    Kafe Anda,<br><span class="text-brand-500">jalan lebih rapi.</span>
+                    {{ $c['hero_title'] }}<br><span class="text-brand-500">{{ $c['hero_highlight'] }}</span>
                 </h1>
                 <p class="mt-4 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg">
-                    Menu digital, pesan lewat QR, kasir, papan pesanan, stok bahan, sampai laba bersih.
-                    Semua dalam satu sistem yang dibuka dari HP. Tanpa aplikasi, tanpa ribet.
+                    {{ $c['hero_subtitle'] }}
                 </p>
                 <div class="mt-8 flex flex-wrap gap-3">
                     @if ($joinUrl)
@@ -82,9 +56,9 @@
                     <a href="{{ $demo }}/menu" target="_blank" rel="noopener" class="rounded-2xl border border-gray-200 bg-white px-6 py-3.5 font-bold text-gray-800 hover:bg-gray-50">Coba sebagai pelanggan ↗</a>
                 </div>
                 <dl class="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-gray-100 pt-6 text-sm">
-                    <div><dt class="text-gray-500">Pelanggan</dt><dd class="mt-1 font-bold">Tanpa install</dd></div>
-                    <div><dt class="text-gray-500">Pembayaran</dt><dd class="mt-1 font-bold">QRIS · transfer · tunai</dd></div>
-                    <div><dt class="text-gray-500">Stok</dt><dd class="mt-1 font-bold">Terpotong otomatis</dd></div>
+                    @foreach ($c['stats'] as $stat)
+                        <div><dt class="text-gray-500">{{ $stat['label'] }}</dt><dd class="mt-1 font-bold">{{ $stat['value'] }}</dd></div>
+                    @endforeach
                 </dl>
             </div>
 
@@ -126,10 +100,10 @@
     {{-- Masalah yang diselesaikan --}}
     <section class="border-b border-gray-100 bg-white">
         <div class="mx-auto grid max-w-6xl gap-6 px-4 py-10 text-sm sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
-            @foreach (['Antrean panjang di kasir saat ramai' => 'Pelanggan pesan dari meja, kasir tinggal konfirmasi.', 'Pesanan salah catat atau terlewat' => 'Semua pesanan tercatat lengkap dengan catatan pelanggan.', 'Stok bahan bocor tanpa ketahuan' => 'Bahan berkurang sesuai resep, selisih mudah dilacak.', 'Ramai, tapi untung bersih tidak jelas' => 'Laba bersih dihitung setelah bahan dan biaya operasional.'] as $pain => $fix)
+            @foreach ($c['pains'] as $item)
                 <div>
-                    <p class="text-gray-500 line-through decoration-gray-300">{{ $pain }}</p>
-                    <p class="mt-1 font-semibold">✓ {{ $fix }}</p>
+                    <p class="text-gray-500 line-through decoration-gray-300">{{ $item['pain'] }}</p>
+                    <p class="mt-1.5 flex gap-2 font-semibold"><x-line-icon name="centang" class="h-5 w-5 shrink-0 text-brand-500" />{{ $item['fix'] }}</p>
                 </div>
             @endforeach
         </div>
@@ -138,31 +112,41 @@
     {{-- Fitur --}}
     <section id="fitur" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 lg:py-24">
         <div class="max-w-2xl">
-            <p class="text-sm font-bold text-brand-600">Fitur</p>
-            <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Dari pesanan masuk sampai laporan laba.</h2>
-            <p class="mt-3 text-gray-600">Semua bagian kafe saling terhubung. Pesanan memotong stok, stok menentukan menu yang bisa dipesan, dan laporan langsung terisi.</p>
+            <p class="text-sm font-bold tracking-wider text-brand-600 uppercase">Fitur</p>
+            <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{{ $c['features_title'] }}</h2>
+            <p class="mt-3 text-gray-600">{{ $c['features_subtitle'] }}</p>
         </div>
         <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach ($features as [$icon, $title, $text])
-                <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                    <span class="grid h-11 w-11 place-items-center rounded-lg bg-brand-50 text-xl">{{ $icon }}</span>
-                    <h3 class="mt-4 font-semibold">{{ $title }}</h3>
-                    <p class="mt-1.5 text-sm leading-relaxed text-gray-600">{{ $text }}</p>
+            @foreach ($c['features'] as $item)
+                <div class="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md">
+                    <span class="grid h-12 w-12 place-items-center rounded-xl border border-brand-100 bg-brand-50/60 text-brand-600 transition group-hover:bg-brand-500 group-hover:text-white">
+                        <x-line-icon :name="$item['icon']" />
+                    </span>
+                    <h3 class="mt-5 font-bold">{{ $item['title'] }}</h3>
+                    <p class="mt-1.5 text-sm leading-relaxed text-gray-600">{{ $item['text'] }}</p>
                 </div>
             @endforeach
         </div>
     </section>
 
-    {{-- Alur pesanan --}}
-    <section class="bg-gray-900 text-white">
-        <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <h2 class="text-3xl font-extrabold tracking-tight">Satu pesanan, empat langkah jelas.</h2>
-            <ol class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ([['Masuk', 'Pelanggan memesan dari HP. Kasir mendengar bunyi dan melihatnya di papan pesanan.', 'bg-brand-500 text-white'], ['Dibayar', 'Kasir mencocokkan bukti QRIS/transfer atau menerima tunai, lalu menekan Terima.', 'bg-blue-500 text-white'], ['Dibuat', 'Dapur melihat pesanan dengan jam tunggu dan perkiraan waktu siap.', 'bg-amber-500 text-white'], ['Siap', 'Geser tombol hijau. HP pelanggan berbunyi dan bergetar, stok sudah terpotong.', 'bg-green-500 text-white']] as [$step, $text, $badge])
-                    <li class="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10">
-                        <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-md px-2 text-sm font-bold {{ $badge }}">{{ $loop->iteration }}</span>
-                        <p class="mt-3 font-semibold">{{ $step }}</p>
-                        <p class="mt-1 text-sm leading-relaxed text-gray-300">{{ $text }}</p>
+    {{-- Alur pesanan (kelas grid: lg:grid-cols-1 lg:grid-cols-2 lg:grid-cols-3 lg:grid-cols-4) --}}
+    <section class="relative overflow-hidden bg-gray-950 text-white">
+        <div class="pointer-events-none absolute -top-40 right-0 h-96 w-96 rounded-full bg-brand-500/15 blur-3xl"></div>
+        <div class="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+            <p class="text-sm font-bold tracking-wider text-brand-400 uppercase">Alur pesanan</p>
+            <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{{ $c['flow_title'] }}</h2>
+            <ol class="relative mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-{{ max(1, min(4, count($c['flow']))) }} lg:gap-6">
+                <div class="pointer-events-none absolute top-7 right-[12%] left-[12%] hidden h-px bg-gradient-to-r from-brand-500/0 via-brand-500/60 to-brand-500/0 lg:block" aria-hidden="true"></div>
+                @foreach ($c['flow'] as $item)
+                    <li class="relative">
+                        <div class="flex items-center gap-4">
+                            <span class="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gray-900 text-brand-400 ring-1 ring-brand-500/40 shadow-lg shadow-brand-500/10">
+                                <x-line-icon :name="$item['icon']" class="h-6 w-6" />
+                            </span>
+                            <span class="bg-gradient-to-b from-white to-white/10 bg-clip-text text-5xl leading-none font-black tracking-tighter text-transparent tabular-nums">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                        </div>
+                        <p class="mt-5 text-lg font-bold">{{ $item['title'] }}</p>
+                        <p class="mt-1.5 text-sm leading-relaxed text-gray-400">{{ $item['text'] }}</p>
                     </li>
                 @endforeach
             </ol>
@@ -173,15 +157,18 @@
     <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-24">
         <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-                <p class="text-sm font-bold text-brand-600">Kenapa kafehub</p>
-                <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Dibuat untuk kafe kecil yang ingin tumbuh.</h2>
-                <p class="mt-3 text-gray-600">Tanpa mesin kasir mahal dan tanpa pelatihan panjang. Kalau Anda bisa memakai WhatsApp, Anda bisa memakai kafehub.</p>
+                <p class="text-sm font-bold tracking-wider text-brand-600 uppercase">Kenapa kafehub</p>
+                <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{{ $c['reasons_title'] }}</h2>
+                <p class="mt-3 text-gray-600">{{ $c['reasons_subtitle'] }}</p>
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
-                @foreach ($reasons as [$title, $text])
-                    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-                        <p class="font-semibold">{{ $title }}</p>
-                        <p class="mt-1.5 text-sm leading-relaxed text-gray-600">{{ $text }}</p>
+                @foreach ($c['reasons'] as $item)
+                    <div class="flex gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-brand-100 bg-brand-50/60 text-brand-600"><x-line-icon :name="$item['icon']" class="h-5 w-5" /></span>
+                        <div>
+                            <p class="font-bold">{{ $item['title'] }}</p>
+                            <p class="mt-1 text-sm leading-relaxed text-gray-600">{{ $item['text'] }}</p>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -191,15 +178,15 @@
     {{-- Cara mulai --}}
     <section id="cara" class="scroll-mt-20 border-y border-gray-100 bg-white">
         <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <p class="text-sm font-bold text-brand-600">Cara mulai</p>
-            <h2 class="mt-2 text-3xl font-extrabold tracking-tight">Siap dipakai dalam hitungan hari.</h2>
+            <p class="text-sm font-bold tracking-wider text-brand-600 uppercase">Cara mulai</p>
+            <h2 class="mt-2 text-3xl font-extrabold tracking-tight">{{ $c['start_title'] }}</h2>
             <ol class="mt-8 grid gap-6 md:grid-cols-3">
-                @foreach ([['Hubungi kami', 'Ceritakan kafe Anda. Kami siapkan alamat sendiri, misalnya namakafe.kafehub.id.'], ['Isi menu & resep', 'Masukkan menu, foto, harga, bahan, dan QRIS kafe dari panel admin. Kami bantu bila perlu.'], ['Tempel QR di meja', 'Cetak QR, taruh di meja, dan pesanan pertama bisa langsung masuk.']] as [$title, $text])
+                @foreach ($c['start'] as $item)
                     <li class="flex gap-4">
-                        <span class="text-4xl leading-none font-extrabold text-brand-500">{{ $loop->iteration }}</span>
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-sm font-black text-white shadow-md shadow-brand-500/30 tabular-nums">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                         <div>
-                            <p class="font-semibold">{{ $title }}</p>
-                            <p class="mt-1 text-sm leading-relaxed text-gray-600">{{ $text }}</p>
+                            <p class="font-bold">{{ $item['title'] }}</p>
+                            <p class="mt-1 text-sm leading-relaxed text-gray-600">{{ $item['text'] }}</p>
                         </div>
                     </li>
                 @endforeach
@@ -209,8 +196,8 @@
 
     {{-- Sudah dipakai --}}
     <section id="dipakai" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 lg:py-24">
-        <p class="text-sm font-bold text-brand-600">Sudah dipakai</p>
-        <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Lihat langsung di kafe sungguhan.</h2>
+        <p class="text-sm font-bold tracking-wider text-brand-600 uppercase">Sudah dipakai</p>
+        <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{{ $c['showcase_title'] }}</h2>
         <div class="mt-8 grid gap-4 md:grid-cols-2">
             @foreach ($showcase as $cafe)
                 <div class="overflow-hidden rounded-2xl bg-gray-900 text-white shadow-lg">
@@ -218,7 +205,7 @@
                         <p class="flex items-center gap-2 text-xs font-semibold text-green-300"><span class="h-2 w-2 rounded-full bg-green-400"></span> Aktif</p>
                         <p class="mt-3 text-2xl font-extrabold">{{ $cafe['name'] }}</p>
                         <p class="mt-1 font-mono text-sm text-gray-300">{{ str_replace('https://', '', $cafe['url']) }}</p>
-                        <p class="mt-4 text-sm leading-relaxed text-gray-200">{{ $cafe['name'] }} memakai kafehub untuk pesan lewat QR, kasir, papan pesanan, stok bahan, dan laporan harian.</p>
+                        @if (filled($cafe['text'] ?? null))<p class="mt-4 text-sm leading-relaxed text-gray-200">{{ $cafe['text'] }}</p>@endif
                     </div>
                     <div class="grid grid-cols-2 border-t border-white/10 text-sm font-semibold">
                         <a href="{{ $cafe['url'] }}/menu" target="_blank" rel="noopener" class="px-6 py-3 hover:bg-white/5">Buka menu ↗</a>
@@ -237,29 +224,31 @@
     </section>
 
     {{-- Tanya jawab --}}
+    @if ($c['faqs'])
     <section id="tanya" class="scroll-mt-20 border-t border-gray-100 bg-white">
         <div class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
             <h2 class="text-3xl font-extrabold tracking-tight">Tanya jawab</h2>
             <div class="mt-6 divide-y divide-gray-100">
-                @foreach ($faqs as [$q, $a])
+                @foreach ($c['faqs'] as $item)
                     <details class="group py-4">
                         <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
-                            {{ $q }}
+                            {{ $item['q'] }}
                             <span class="text-gray-400 transition group-open:rotate-45">＋</span>
                         </summary>
-                        <p class="mt-2 text-sm leading-relaxed text-gray-600">{{ $a }}</p>
+                        <p class="mt-2 text-sm leading-relaxed text-gray-600">{{ $item['a'] }}</p>
                     </details>
                 @endforeach
             </div>
         </div>
     </section>
+    @endif
 
     {{-- Ajakan akhir --}}
     <section class="bg-gradient-to-br from-brand-500 to-brand-700 text-white">
         <div class="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-14 sm:px-6 md:flex-row md:items-center">
             <div>
-                <h2 class="text-3xl font-extrabold tracking-tight">Siap membuat kafe Anda lebih rapi?</h2>
-                <p class="mt-2 text-white/85">Coba dulu sebagai pelanggan di Antara Cafe, lalu bayangkan itu kafe Anda.</p>
+                <h2 class="text-3xl font-extrabold tracking-tight">{{ $c['cta_title'] }}</h2>
+                <p class="mt-2 text-white/85">{{ $c['cta_subtitle'] }}</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 @if ($joinUrl)
@@ -273,7 +262,7 @@
     <footer class="bg-gray-900 text-sm text-gray-400">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 sm:px-6">
             <p>© {{ now()->year }} kafehub.id</p>
-            <p>Dipakai oleh <a href="{{ $demo }}" class="font-semibold text-white hover:underline">Antara Cafe</a></p>
+            @if ($showcase)<p>Dipakai oleh <a href="{{ $demo }}" class="font-semibold text-white hover:underline">{{ $showcase[0]['name'] }}</a></p>@endif
         </div>
     </footer>
 </body>

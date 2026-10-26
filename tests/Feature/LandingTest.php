@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use App\Support\LineIcon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -41,5 +43,36 @@ class LandingTest extends TestCase
         $this->get('http://www.kafehub.id/admin')->assertRedirect('https://antara.kafehub.id/admin');
         $this->get('http://kafehub.id/kafehub')->assertRedirect('http://kafehub.id');
         $this->get('http://antara.kafehub.id/kafehub')->assertOk();
+    }
+
+    public function test_admin_can_edit_landing_content(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->get(route('admin.kafehub.edit'))->assertOk()->assertSee('Pesan lewat QR');
+
+        $this->put(route('admin.kafehub.update'), [
+            'whatsapp' => '0811 2222 333',
+            'hero_title' => 'Kafe ramai,',
+            'features' => [
+                ['icon' => 'kopi', 'title' => 'Menu digital', 'text' => 'Foto dan harga selalu terbaru.'],
+                ['icon' => 'bintang', 'title' => '', 'text' => ''],
+            ],
+            'faqs' => '',
+        ])->assertSessionHasNoErrors()->assertRedirect(route('admin.kafehub.edit'));
+
+        $this->get('http://antara.kafehub.id/kafehub')->assertOk()
+            ->assertSee('Kafe ramai,')
+            ->assertSee('jalan lebih rapi.')
+            ->assertSee('Menu digital')
+            ->assertDontSee('Kasir cepat')
+            ->assertDontSee('Tanya jawab')
+            ->assertSee('https://wa.me/628112222333', false)
+            ->assertSee(LineIcon::path('kopi'), false);
+    }
+
+    public function test_kasir_cannot_edit_landing(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'kasir']))
+            ->put(route('admin.kafehub.update'), ['hero_title' => 'x'])->assertForbidden();
     }
 }

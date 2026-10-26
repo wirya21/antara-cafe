@@ -4,11 +4,6 @@ return [
     // Domain yang menampilkan halaman depan kafehub (bukan menu kafe).
     'hosts' => array_filter(explode(',', env('KAFEHUB_HOSTS', 'kafehub.id,www.kafehub.id'))),
 
-    // Nomor WhatsApp untuk calon pengguna, format 62xxxx. Kosong = tombol diarahkan ke demo.
+    // Nomor WhatsApp bawaan untuk calon pengguna; bisa diganti dari panel admin Halaman kafehub.
     'whatsapp' => env('KAFEHUB_WHATSAPP'),
-
-    // Kafe yang sudah memakai sistem ini, ditampilkan di halaman depan.
-    'showcase' => [
-        ['name' => 'Antara Cafe', 'url' => 'https://antara.kafehub.id'],
-    ],
 ];

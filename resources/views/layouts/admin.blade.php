@@ -22,6 +22,7 @@
             ['admin.members.index', 'Member', 'admin.members.*'],
             ['admin.users.index', 'Akun', 'admin.users.*'],
             ['admin.settings.edit', 'Pengaturan', 'admin.settings.*'],
+            ['admin.kafehub.edit', 'Halaman kafehub.id', 'admin.kafehub.*'],
             ['cashier.index', 'Buka kasir ↗', 'cashier.*'],
             ['menu', 'Lihat menu pelanggan ↗', 'menu'],
             ['display', 'Buka layar TV ↗', 'display'],
