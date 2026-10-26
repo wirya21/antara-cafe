@@ -18,6 +18,11 @@ class AuthController extends Controller
         return view('panel.login');
     }
 
+    public function edit(): View
+    {
+        return view('panel.account');
+    }
+
     public function login(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -31,7 +36,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('panel.edit'));
+        return redirect()->intended(route('panel.dashboard'));
     }
 
     public function password(Request $request): RedirectResponse
@@ -45,7 +50,7 @@ class AuthController extends Controller
 
         $request->user('kafehub')->update(['password' => $data['password']]);
 
-        return redirect()->route('panel.edit')->with('status', 'Password berhasil diganti.');
+        return redirect()->route('panel.account')->with('status', 'Password berhasil diganti.');
     }
 
     public function logout(Request $request): RedirectResponse

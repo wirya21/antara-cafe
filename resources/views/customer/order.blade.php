@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#ffffff">
-    <title>Pesanan {{ $order->code }} · Antara Cafe</title>
+    <title>Pesanan {{ $order->code }} · {{ $cafe?->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 @php
@@ -21,7 +21,7 @@
             </a>
             <div class="min-w-0">
                 <p class="text-lg leading-tight font-bold">Status pesanan</p>
-                <p class="text-xs text-gray-500">Antara Cafe · {{ $order->code }}</p>
+                <p class="text-xs text-gray-500">{{ $cafe?->name }} · {{ $order->code }}</p>
             </div>
         </div>
     </header>
@@ -132,7 +132,7 @@
                     @if ($method === 'qris')
                         @if ($qrisUrl)
                             <div class="mx-auto max-w-[260px] overflow-hidden rounded-2xl bg-white p-2 ring-1 ring-gray-100">
-                                <img src="{{ $qrisUrl }}" alt="QRIS Antara Cafe" class="w-full">
+                                <img src="{{ $qrisUrl }}" alt="QRIS {{ $cafe?->name }}" class="w-full">
                             </div>
                             <p class="text-center text-sm text-gray-500">Scan dengan aplikasi bank atau e-wallet, masukkan nominal <b><x-rupiah :value="$order->total" /></b>, lalu screenshot bukti bayarnya.</p>
                             <a href="{{ $qrisUrl }}" download class="block w-full rounded-xl border border-gray-200 py-2.5 text-center text-sm font-semibold text-gray-700">Simpan gambar QRIS</a>

@@ -8,10 +8,12 @@ use App\Models\Ingredient;
 use App\Models\Product;
 use App\Support\Costing;
 use App\Support\Photo;
+use App\Support\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -100,7 +102,7 @@ class ProductController extends Controller
     private function validated(Request $request, ?Product $product = null): array
     {
         $data = $request->validate([
-            'category_id' => ['required', 'exists:categories,id'],
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('cafe_id', Tenant::id())],
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'integer', 'min:0'],
@@ -109,7 +111,7 @@ class ProductController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'recipe' => ['nullable', 'array'],
-            'recipe.*.ingredient_id' => ['nullable', 'exists:ingredients,id'],
+            'recipe.*.ingredient_id' => ['nullable', Rule::exists('ingredients', 'id')->where('cafe_id', Tenant::id())],
             'recipe.*.quantity' => ['nullable', 'numeric', 'min:0'],
         ]);
 

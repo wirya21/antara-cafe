@@ -209,7 +209,7 @@ class PaymentFlowTest extends TestCase
         ])->assertRedirect(route('admin.settings.edit'));
 
         $this->assertSame('abc123', Setting::get('fonnte_token'));
-        $this->assertNotSame('abc123', Setting::find('fonnte_token')->value, 'Token harus disimpan terenkripsi.');
+        $this->assertNotSame('abc123', Setting::where('key', 'fonnte_token')->value('value'), 'Token harus disimpan terenkripsi.');
         Storage::disk('public')->assertExists(Setting::get('qris_image_path'));
 
         // Token kosong saat menyimpan ulang tidak menghapus token lama.

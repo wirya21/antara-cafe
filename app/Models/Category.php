@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCafe;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['name', 'slug', 'group', 'sort_order', 'is_active'])]
 class Category extends Model
 {
+    use BelongsToCafe;
+
     public const GROUPS = [
         'makanan' => 'Makanan',
         'minuman' => 'Minuman',

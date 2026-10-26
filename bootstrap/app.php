@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsStaff;
+use App\Http\Middleware\IdentifyCafe;
 use App\Http\Middleware\KeepLandingHostOnLanding;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,9 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'staff' => EnsureUserIsStaff::class,
         ]);
-        $middleware->web(prepend: KeepLandingHostOnLanding::class);
+        $middleware->web(prepend: [KeepLandingHostOnLanding::class, IdentifyCafe::class]);
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('panel', 'panel/*') ? route('panel.login') : route('login'));
-        $middleware->redirectUsersTo(fn (Request $request) => $request->is('panel', 'panel/*') ? route('panel.edit') : $request->user()->homeRoute());
+        $middleware->redirectUsersTo(fn (Request $request) => $request->is('panel', 'panel/*') ? route('panel.dashboard') : $request->user()->homeRoute());
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

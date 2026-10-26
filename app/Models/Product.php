@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCafe;
 use App\Support\Costing;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 #[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'prep_minutes', 'manual_cost', 'image_path', 'is_available', 'is_featured', 'sort_order'])]
 class Product extends Model
 {
+    use BelongsToCafe;
+
     protected function casts(): array
     {
         return [

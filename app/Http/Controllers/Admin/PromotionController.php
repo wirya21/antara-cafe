@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
 use App\Support\Photo;
+use App\Support\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -80,7 +81,7 @@ class PromotionController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'discount_type' => ['nullable', Rule::in(array_keys(Promotion::DISCOUNT_TYPES))],
             'discount_value' => ['nullable', 'integer', 'min:0', Rule::when($request->input('discount_type') === 'percent', 'max:100')],
-            'voucher_code' => ['nullable', 'alpha_dash:ascii', 'max:30', Rule::unique('promotions')->ignore($promotion)],
+            'voucher_code' => ['nullable', 'alpha_dash:ascii', 'max:30', Rule::unique('promotions')->where('cafe_id', Tenant::id())->ignore($promotion)],
             'min_purchase' => ['nullable', 'integer', 'min:0'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],

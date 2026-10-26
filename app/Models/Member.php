@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCafe;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['name', 'phone', 'points'])]
 class Member extends Model
 {
+    use BelongsToCafe;
+
     /** Poin yang didapat: 1 poin setiap kelipatan Rp10.000. */
     public const RUPIAH_PER_POINT = 10000;
 

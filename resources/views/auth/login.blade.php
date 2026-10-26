@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masuk · Antara Cafe</title>
+    <title>Masuk · {{ $cafe?->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-theme-style />
 </head>
@@ -11,7 +11,7 @@
     <div class="w-full max-w-sm">
         <div class="mb-6 text-center text-espresso-50">
             <div class="text-4xl">☕</div>
-            <h1 class="mt-2 text-2xl font-semibold">Antara Cafe</h1>
+            <h1 class="mt-2 text-2xl font-semibold">{{ $cafe?->name }}</h1>
             <p class="text-sm text-espresso-200">Masuk sebagai admin atau kasir</p>
         </div>
 

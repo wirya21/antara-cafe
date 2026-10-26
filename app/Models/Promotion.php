@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCafe;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 #[Fillable(['title', 'description', 'image_path', 'discount_type', 'discount_value', 'voucher_code', 'min_purchase', 'starts_at', 'ends_at', 'is_active', 'show_popup'])]
 class Promotion extends Model
 {
+    use BelongsToCafe;
+
     protected function casts(): array
     {
         return [

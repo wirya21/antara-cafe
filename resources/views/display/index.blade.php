@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Layar Menu · Antara Cafe</title>
+    <title>Layar Menu · {{ $cafe?->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-theme-style />
 </head>
@@ -37,14 +37,14 @@
             <div class="grid h-full place-items-center text-center">
                 <div>
                     <div class="text-[10vw]">☕</div>
-                    <p class="font-display text-[4vw] font-semibold">Antara Cafe</p>
+                    <p class="font-display text-[4vw] font-semibold">{{ $cafe?->name }}</p>
                 </div>
             </div>
         </template>
 
         <div class="absolute top-[2vw] left-[2vw] flex items-center gap-[.8vw] rounded-full bg-black/30 px-[1.2vw] py-[.6vw] backdrop-blur">
             <span class="text-[1.6vw]">☕</span>
-            <span class="font-display text-[1.6vw] font-semibold">Antara Cafe</span>
+            <span class="font-display text-[1.6vw] font-semibold">{{ $cafe?->name }}</span>
         </div>
         <div class="absolute top-[2vw] right-[2vw] flex gap-[.5vw]">
             <template x-for="(slide, i) in slides" :key="'dot' + i">

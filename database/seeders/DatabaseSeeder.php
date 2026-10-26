@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Cafe;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\User;
 use App\Support\Inventory;
+use App\Support\Tenant;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -20,6 +22,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Kafe pertama; data di bawah ini menjadi miliknya.
+        Tenant::set(Cafe::firstOrCreate(['slug' => 'antara'], ['name' => 'Antara Cafe']));
+
         $username = env('ADMIN_USERNAME', 'admin');
         $password = env('ADMIN_PASSWORD') ?: Str::password(14, symbols: false);
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCafe;
 use App\Support\Busy;
 use App\Support\Inventory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 #[Fillable(['code', 'source', 'status', 'customer_name', 'table_number', 'member_id', 'promotion_id', 'cashier_id', 'subtotal', 'discount', 'total', 'payment_method', 'payment_proof_path', 'paid_at', 'completed_at', 'void_reason', 'voided_by', 'voided_at'])]
 class Order extends Model
 {
+    use BelongsToCafe;
+
     public const STATUSES = [
         'pending' => 'Menunggu pembayaran',
         'paid' => 'Dibayar',
@@ -26,7 +29,7 @@ class Order extends Model
 
         do {
             $code = 'A-'.collect(range(1, 5))->map(fn () => $alphabet[random_int(0, strlen($alphabet) - 1)])->implode('');
-        } while (static::where('code', $code)->exists());
+        } while (static::withoutGlobalScope('cafe')->where('code', $code)->exists());
 
         return $code;
     }

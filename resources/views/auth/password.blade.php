@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ganti password · Antara Cafe</title>
+    <title>Ganti password · {{ $cafe?->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-theme-style />
 </head>

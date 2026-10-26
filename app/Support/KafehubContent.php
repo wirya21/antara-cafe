@@ -100,14 +100,14 @@ class KafehubContent
 
     public static function get(): array
     {
-        $saved = json_decode((string) Setting::get(self::KEY), true);
+        $saved = json_decode((string) Setting::platform(self::KEY), true);
 
         return array_replace(self::defaults(), is_array($saved) ? array_filter($saved, fn ($v) => $v !== null && $v !== '') : []);
     }
 
     public static function save(array $content): void
     {
-        Setting::put(self::KEY, json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        Setting::putPlatform(self::KEY, json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /** Link WhatsApp untuk tombol Gabung; null bila nomor belum diisi. */

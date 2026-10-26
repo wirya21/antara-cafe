@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Support\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,7 +37,7 @@ class MemberController extends Controller
 
         $member->update($request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'min:8', 'max:20', Rule::unique('members')->ignore($member)],
+            'phone' => ['required', 'string', 'min:8', 'max:20', Rule::unique('members')->where('cafe_id', Tenant::id())->ignore($member)],
             'points' => ['required', 'integer', 'min:0'],
         ]));
 

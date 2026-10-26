@@ -23,7 +23,7 @@
 
             <div>
                 <label for="bank_accounts" class="label">Rekening transfer</label>
-                <textarea id="bank_accounts" name="bank_accounts" rows="4" class="input" placeholder="BCA 1234567890 a.n. Antara Cafe&#10;Mandiri 0987654321 a.n. Antara Cafe">{{ old('bank_accounts', $bankAccounts) }}</textarea>
+                <textarea id="bank_accounts" name="bank_accounts" rows="4" class="input" placeholder="BCA 1234567890 a.n. {{ $cafe?->name }}&#10;Mandiri 0987654321 a.n. {{ $cafe?->name }}">{{ old('bank_accounts', $bankAccounts) }}</textarea>
                 <p class="mt-1 text-xs text-espresso-600">Satu rekening per baris. Kosongkan bila tidak menerima transfer.</p>
             </div>
         </div>
