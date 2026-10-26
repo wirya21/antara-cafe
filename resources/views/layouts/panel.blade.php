@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Panel') · kafehub</title>
+    <title>@yield('title', 'Panel') · KafeHub.id</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-panel-style />
+    <x-kafehub-icons />
 </head>
 <body class="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased">
     @php
@@ -19,10 +20,9 @@
     <div class="lg:flex">
         {{-- Samping (layar lebar) --}}
         <aside class="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
-            <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-2 px-6 py-5 text-lg font-extrabold tracking-tight">
-                <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand-500 text-sm shadow-md shadow-brand-500/30">☕</span>
-                <span>kafe<span class="text-brand-500">hub</span></span>
-                <span class="ml-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">Superadmin</span>
+            <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-2 px-6 py-5">
+                <img src="{{ asset('images/kafehub/logo.png') }}" alt="KafeHub.id" class="h-10 w-auto" width="304" height="160">
+                <span class="rounded-md bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">Superadmin</span>
             </a>
             <nav class="flex-1 space-y-1 px-3">
                 @foreach ($nav as [$route, $label, $icon, $pattern])
@@ -47,9 +47,8 @@
             {{-- Atas (HP dan tablet) --}}
             <header class="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur lg:hidden">
                 <div class="flex items-center justify-between gap-3 px-4 py-3">
-                    <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-2 text-lg font-extrabold tracking-tight">
-                        <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand-500 text-sm">☕</span>
-                        <span>kafe<span class="text-brand-500">hub</span></span>
+                    <a href="{{ route('panel.dashboard') }}" class="flex items-center">
+                        <img src="{{ asset('images/kafehub/logo.png') }}" alt="KafeHub.id" class="h-8 w-auto" width="304" height="160">
                     </a>
                     <form method="POST" action="{{ route('panel.logout') }}">
                         @csrf

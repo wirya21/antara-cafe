@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masuk panel · kafehub</title>
+    <title>Masuk panel · KafeHub.id</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-panel-style />
+    <x-kafehub-icons />
 </head>
 <body class="flex min-h-screen items-center justify-center bg-gray-50 bg-[radial-gradient(circle_at_top,#ffe9dc,transparent_55%)] px-4 font-sans text-gray-900 antialiased">
     <div class="w-full max-w-sm">
         <div class="mb-6 text-center">
-            <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand-500 text-xl shadow-lg shadow-brand-500/30">☕</span>
-            <h1 class="mt-3 text-2xl font-extrabold tracking-tight">kafe<span class="text-brand-500">hub</span></h1>
-            <p class="text-sm text-gray-500">Panel pengelola kafehub.id</p>
+            <h1><img src="{{ asset('images/kafehub/logo.png') }}" alt="KafeHub.id" class="mx-auto h-16 w-auto" width="304" height="160"></h1>
+            <p class="mt-3 text-sm text-gray-500">Panel pengelola kafehub.id</p>
         </div>
 
         <form method="POST" action="{{ route('panel.login') }}" class="card space-y-4 p-6">

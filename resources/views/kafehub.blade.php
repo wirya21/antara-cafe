@@ -8,6 +8,8 @@
     <meta property="og:title" content="kafehub · Kafe Anda, jalan lebih rapi">
     <meta property="og:description" content="Pesan lewat QR, kasir, stok bahan, dan laporan laba dalam satu sistem. Sudah dipakai Antara Cafe.">
     <meta name="theme-color" content="#ffffff">
+    <meta property="og:image" content="{{ asset('images/kafehub/logo.png') }}">
+    <x-kafehub-icons />
     @vite(['resources/css/app.css'])
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 antialiased">
@@ -16,9 +18,8 @@
     {{-- Navigasi --}}
     <header class="sticky top-0 z-30 border-b border-gray-100 bg-white/95 backdrop-blur">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-            <a href="#" class="flex items-center gap-2 text-xl font-extrabold tracking-tight">
-                <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-base shadow-md shadow-brand-500/30">☕</span>
-                <span>kafe<span class="text-brand-500">hub</span></span>
+            <a href="#" class="flex items-center">
+                <img src="{{ asset('images/kafehub/logo.png') }}" alt="KafeHub.id" class="h-11 w-auto sm:h-12" width="304" height="160">
             </a>
             <nav class="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
                 <a href="#fitur" class="hover:text-gray-900">Fitur</a>
@@ -261,7 +262,7 @@
 
     <footer class="bg-gray-900 text-sm text-gray-400">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 sm:px-6">
-            <p>© {{ now()->year }} kafehub.id</p>
+            <p class="flex items-center gap-2"><img src="{{ asset('images/kafehub/mark.png') }}" alt="" class="h-6 w-auto"> © {{ now()->year }} KafeHub.id</p>
             @if ($showcase)<p>Dipakai oleh <a href="{{ $demo }}" class="font-semibold text-white hover:underline">{{ $showcase[0]['name'] }}</a></p>@endif
         </div>
     </footer>
