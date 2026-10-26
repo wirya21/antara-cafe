@@ -38,7 +38,7 @@
 @endphp
 
 @section('content')
-    <form method="POST" action="{{ route('panel.update') }}" class="space-y-6">
+    <form method="POST" action="{{ route('panel.landing.update') }}" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -46,9 +46,9 @@
             <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>
         @endif
 
-        <div>
-            <h1 class="text-2xl font-extrabold tracking-tight">Halaman kafehub.id</h1>
-            <p class="mt-1 text-sm text-gray-600">Isi halaman depan untuk calon pengguna. Kosongkan kolom untuk memakai teks bawaan.</p>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <p class="text-sm text-gray-600">Isi halaman depan untuk calon pengguna. Kosongkan kolom untuk memakai teks bawaan.</p>
+            <a href="{{ url('/') }}" target="_blank" class="btn-ghost">Lihat halaman ↗</a>
         </div>
 
         <div class="card space-y-3 p-4 sm:p-6">
@@ -88,27 +88,4 @@
         </div>
     </form>
 
-    <form method="POST" action="{{ route('panel.password') }}" class="card mt-6 max-w-4xl space-y-3 p-4 sm:p-6">
-        @csrf
-        @method('PUT')
-        <h2 class="text-lg font-semibold">Ganti password panel</h2>
-        @if ($errors->password->any())
-            <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->password->first() }}</div>
-        @endif
-        <div class="grid gap-3 sm:grid-cols-3">
-            <div>
-                <label for="current_password" class="label">Password lama</label>
-                <input id="current_password" type="password" name="current_password" required autocomplete="current-password" class="input">
-            </div>
-            <div>
-                <label for="new_password" class="label">Password baru</label>
-                <input id="new_password" type="password" name="password" required minlength="8" autocomplete="new-password" class="input">
-            </div>
-            <div>
-                <label for="password_confirmation" class="label">Ulangi password baru</label>
-                <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" class="input">
-            </div>
-        </div>
-        <button class="btn-ghost">Ganti password</button>
-    </form>
 @endsection

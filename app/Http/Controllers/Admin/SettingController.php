@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Support\Busy;
 use App\Support\Costing;
 use App\Support\Photo;
+use App\Support\Tenant;
 use App\Support\Theme;
 use App\Support\WhatsApp;
 use Illuminate\Http\RedirectResponse;
@@ -116,7 +117,7 @@ class SettingController extends Controller
             return back()->with('error', 'Isi token Fonnte dan nomor WhatsApp tujuan terlebih dahulu.');
         }
 
-        return $whatsApp->send("✅ Tes notifikasi Antara Cafe berhasil.\nPesanan baru akan dikirim ke nomor ini.")
+        return $whatsApp->send('✅ Tes notifikasi '.Tenant::cafe()?->name." berhasil.\nPesanan baru akan dikirim ke nomor ini.")
             ? back()->with('status', 'Pesan uji terkirim. Cek WhatsApp Anda.')
             : back()->with('error', 'Pesan uji gagal dikirim. Periksa token Fonnte dan pastikan perangkat WhatsApp di Fonnte terhubung.');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCafe;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['name', 'unit', 'stock', 'min_stock', 'cost_per_unit'])]
 class Ingredient extends Model
 {
+    use BelongsToCafe;
+
     public const UNITS = ['gram', 'kg', 'ml', 'liter', 'pcs', 'pack', 'botol', 'shot'];
 
     protected function casts(): array

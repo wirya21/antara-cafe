@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kasir · Antara Cafe</title>
+    <title>Kasir · {{ $cafe?->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-theme-style />
 </head>
@@ -14,7 +14,7 @@
         <div class="flex items-center gap-3">
             <span class="grid h-9 w-9 place-items-center rounded-full bg-espresso-50 text-lg">☕</span>
             <div>
-                <p class="font-display text-lg leading-none font-semibold">Antara Cafe</p>
+                <p class="font-display text-lg leading-none font-semibold">{{ $cafe?->name }}</p>
                 <a href="{{ route('password.edit') }}" class="text-xs text-espresso-200 hover:underline">Kasir · {{ auth()->user()->name }}</a>
             </div>
         </div>

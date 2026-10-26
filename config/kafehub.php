@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Domain induk; tiap kafe memakai {slug}.<domain>, misalnya antara.kafehub.id.
+    'domain' => env('KAFEHUB_DOMAIN', 'kafehub.id'),
+
     // Domain yang menampilkan halaman depan kafehub (bukan menu kafe).
     'hosts' => array_filter(explode(',', env('KAFEHUB_HOSTS', 'kafehub.id,www.kafehub.id'))),
 

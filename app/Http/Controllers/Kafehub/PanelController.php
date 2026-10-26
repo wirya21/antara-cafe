@@ -15,7 +15,7 @@ class PanelController extends Controller
 {
     public function edit(): View
     {
-        return view('panel.edit', [
+        return view('panel.landing', [
             'c' => KafehubContent::get(),
             'icons' => LineIcon::options(),
         ]);
@@ -61,6 +61,6 @@ class PanelController extends Controller
 
         KafehubContent::save($content);
 
-        return redirect()->route('panel.edit')->with('status', 'Halaman kafehub.id disimpan.');
+        return redirect()->route('panel.landing.edit')->with('status', 'Halaman kafehub.id disimpan.');
     }
 }

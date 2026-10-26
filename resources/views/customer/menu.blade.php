@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#ffffff">
-    <title>Menu · Antara Cafe</title>
+    <title>Menu · {{ $cafe?->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 antialiased">
@@ -30,7 +30,8 @@
                     </p>
                     <p class="mt-1 flex items-center gap-2 text-2xl font-extrabold tracking-tight">
                         <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-lg shadow-md shadow-brand-500/30">☕</span>
-                        <span>Antara<span class="text-brand-500">Cafe</span></span>
+                        @php [$brandA, $brandB] = $cafe->brandParts(); @endphp
+                        <span>{{ $brandA }}<span class="text-brand-500">{{ $brandB }}</span></span>
                     </p>
                 </div>
                 <a href="{{ route('menu.history') }}" class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50" aria-label="Pesanan saya">
@@ -59,7 +60,7 @@
             <div class="pointer-events-none absolute -top-16 -left-10 h-48 w-48 rounded-full bg-white/10"></div>
             <div class="relative grid min-h-44 grid-cols-[1fr_auto] items-center gap-2 p-5 sm:p-7">
                 <div class="min-w-0">
-                    <span class="inline-block rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold tracking-wider uppercase">Antara Cafe</span>
+                    <span class="inline-block rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold tracking-wider uppercase">{{ $cafe?->name }}</span>
                     <h1 class="mt-3 text-2xl leading-tight font-extrabold sm:text-3xl">{{ $hero['title'] }}</h1>
                     <p class="mt-1.5 line-clamp-3 text-sm text-white/85">{{ $hero['subtitle'] }}</p>
                     <button type="button" @click="document.getElementById('daftar-menu').scrollIntoView({ behavior: 'smooth' })"

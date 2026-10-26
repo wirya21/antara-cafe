@@ -56,9 +56,10 @@ class LandingTest extends TestCase
         $this->post('http://kafehub.id/panel/masuk', ['username' => 'kafehub', 'password' => 'rahasia123'])->assertRedirect('http://kafehub.id/panel');
         $this->assertAuthenticatedAs($manager, 'kafehub');
 
-        $this->get('http://kafehub.id/panel')->assertOk()->assertSee('Pesan lewat QR');
+        $this->get('http://kafehub.id/panel')->assertOk()->assertSee('Ringkasan');
+        $this->get('http://kafehub.id/panel/halaman')->assertOk()->assertSee('Pesan lewat QR');
 
-        $this->put('http://kafehub.id/panel', [
+        $this->put('http://kafehub.id/panel/halaman', [
             'whatsapp' => '0811 2222 333',
             'hero_title' => 'Kafe ramai,',
             'features' => [
@@ -66,7 +67,7 @@ class LandingTest extends TestCase
                 ['icon' => 'bintang', 'title' => '', 'text' => ''],
             ],
             'faqs' => '',
-        ])->assertSessionHasNoErrors()->assertRedirect('http://kafehub.id/panel');
+        ])->assertSessionHasNoErrors()->assertRedirect('http://kafehub.id/panel/halaman');
 
         $this->get('http://kafehub.id/')->assertOk()
             ->assertSee('Kafe ramai,')
@@ -77,7 +78,7 @@ class LandingTest extends TestCase
             ->assertSee('https://wa.me/628112222333', false)
             ->assertSee(LineIcon::path('kopi'), false);
 
-        $this->put('http://kafehub.id/panel/password', [
+        $this->put('http://kafehub.id/panel/akun', [
             'current_password' => 'rahasia123', 'password' => 'baru12345', 'password_confirmation' => 'baru12345',
         ])->assertSessionHasNoErrors();
         $this->assertTrue(Hash::check('baru12345', $manager->fresh()->password));
@@ -90,7 +91,7 @@ class LandingTest extends TestCase
         // Akun admin kafe tidak berlaku di panel kafehub, walau username dan password-nya sama.
         $this->post('http://kafehub.id/panel/masuk', ['username' => 'kafehub', 'password' => 'rahasia123'])->assertSessionHasErrors('username');
         $this->actingAs($admin)->get('http://kafehub.id/panel')->assertRedirect('http://kafehub.id/panel/masuk');
-        $this->put('http://kafehub.id/panel', ['hero_title' => 'x'])->assertRedirect('http://kafehub.id/panel/masuk');
+        $this->put('http://kafehub.id/panel/halaman', ['hero_title' => 'x'])->assertRedirect('http://kafehub.id/panel/masuk');
     }
 
     public function test_panel_lives_only_on_main_domain(): void
