@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IngredientController;
-use App\Http\Controllers\Admin\KafehubController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrderBoardController;
 use App\Http\Controllers\Admin\OrderController;
@@ -18,6 +17,8 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Cashier\CashierController;
 use App\Http\Controllers\Customer\DisplayController;
 use App\Http\Controllers\Customer\MenuController;
+use App\Http\Controllers\Kafehub\AuthController as PanelAuthController;
+use App\Http\Controllers\Kafehub\PanelController;
 use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,20 @@ Route::get('/menu/pesanan/{order}/status', [MenuController::class, 'status'])->m
 Route::post('/menu/pesanan/{order}/metode', [MenuController::class, 'changeMethod'])->middleware('throttle:10,1')->name('menu.order.method');
 Route::post('/menu/pesanan/{order}/bukti', [MenuController::class, 'uploadProof'])->middleware('throttle:10,1')->name('menu.order.proof');
 Route::get('/layar', DisplayController::class)->name('display');
+
+// Panel pengelola kafehub.id: akun dan login sendiri, terpisah dari admin kafe.
+Route::prefix('panel')->name('panel.')->group(function () {
+    Route::middleware('guest:kafehub')->group(function () {
+        Route::get('masuk', [PanelAuthController::class, 'show'])->name('login');
+        Route::post('masuk', [PanelAuthController::class, 'login'])->middleware('throttle:10,1');
+    });
+    Route::middleware('auth:kafehub')->group(function () {
+        Route::get('/', [PanelController::class, 'edit'])->name('edit');
+        Route::put('/', [PanelController::class, 'update'])->name('update');
+        Route::put('password', [PanelAuthController::class, 'password'])->name('password');
+        Route::post('keluar', [PanelAuthController::class, 'logout'])->name('logout');
+    });
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
@@ -70,9 +85,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('stok', IngredientController::class)->names('ingredients')->parameters(['stok' => 'ingredient']);
     Route::get('resep', [RecipeController::class, 'index'])->name('recipes.index');
     Route::post('stok/{ingredient}/catat', [IngredientController::class, 'move'])->name('ingredients.move');
-
-    Route::get('kafehub', [KafehubController::class, 'edit'])->name('kafehub.edit');
-    Route::put('kafehub', [KafehubController::class, 'update'])->name('kafehub.update');
 
     Route::get('pengaturan', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('pengaturan', [SettingController::class, 'update'])->name('settings.update');

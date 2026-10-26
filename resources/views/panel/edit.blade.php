@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.panel')
 
 @section('title', 'Halaman kafehub.id')
 
@@ -38,7 +38,7 @@
 @endphp
 
 @section('content')
-    <form method="POST" action="{{ route('admin.kafehub.update') }}" class="max-w-4xl space-y-6 pb-24">
+    <form method="POST" action="{{ route('panel.update') }}" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -46,11 +46,9 @@
             <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>
         @endif
 
-        <div class="card flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
-            <div>
-                <p class="text-sm text-espresso-600">Isi halaman depan <b>kafehub.id</b> untuk calon pengguna. Kosongkan kolom untuk memakai teks bawaan.</p>
-            </div>
-            <a href="{{ route('kafehub') }}" target="_blank" class="btn-ghost">Lihat halaman ↗</a>
+        <div>
+            <h1 class="text-2xl font-extrabold tracking-tight">Halaman kafehub.id</h1>
+            <p class="mt-1 text-sm text-gray-600">Isi halaman depan untuk calon pengguna. Kosongkan kolom untuk memakai teks bawaan.</p>
         </div>
 
         <div class="card space-y-3 p-4 sm:p-6">
@@ -58,7 +56,7 @@
             <div class="max-w-sm">
                 <label for="whatsapp" class="label">Nomor WhatsApp untuk tombol "Gabung"</label>
                 <input id="whatsapp" name="whatsapp" value="{{ old('whatsapp', $c['whatsapp']) }}" inputmode="tel" class="input" placeholder="08xxxxxxxxxx">
-                <p class="mt-1 text-xs text-espresso-500">Bisa ditulis 08… atau 628…. Kosongkan untuk memakai nomor bawaan.</p>
+                <p class="mt-1 text-xs text-gray-500">Bisa ditulis 08… atau 628…. Kosongkan untuk memakai nomor bawaan.</p>
             </div>
         </div>
 
@@ -66,7 +64,7 @@
             <div class="card space-y-4 p-4 sm:p-6">
                 <div>
                     <h2 class="text-lg font-semibold">{{ $title }}</h2>
-                    @if ($hint)<p class="text-sm text-espresso-600">{{ $hint }}</p>@endif
+                    @if ($hint)<p class="text-sm text-gray-600">{{ $hint }}</p>@endif
                 </div>
                 @foreach ($texts as $field)
                     <div>
@@ -79,14 +77,38 @@
                     </div>
                 @endforeach
                 @foreach ($lists as [$name, $label, $fields])
-                    @include('admin.kafehub.list', ['name' => $name, 'label' => $label, 'fields' => $fields, 'items' => $c[$name]])
+                    @include('panel.list', ['name' => $name, 'label' => $label, 'fields' => $fields, 'items' => $c[$name]])
                 @endforeach
             </div>
         @endforeach
 
-        <div class="sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t border-espresso-100 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-            <p class="text-sm text-espresso-600">Perubahan tampil di kafehub.id setelah disimpan.</p>
-            <button class="btn-primary">Simpan halaman</button>
+        <div class="sticky bottom-3 z-10 flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+            <p class="text-sm text-gray-600">Perubahan tampil di kafehub.id setelah disimpan.</p>
+            <button class="shrink-0 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-500/30 transition hover:bg-brand-600">Simpan halaman</button>
         </div>
+    </form>
+
+    <form method="POST" action="{{ route('panel.password') }}" class="card mt-6 max-w-4xl space-y-3 p-4 sm:p-6">
+        @csrf
+        @method('PUT')
+        <h2 class="text-lg font-semibold">Ganti password panel</h2>
+        @if ($errors->password->any())
+            <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->password->first() }}</div>
+        @endif
+        <div class="grid gap-3 sm:grid-cols-3">
+            <div>
+                <label for="current_password" class="label">Password lama</label>
+                <input id="current_password" type="password" name="current_password" required autocomplete="current-password" class="input">
+            </div>
+            <div>
+                <label for="new_password" class="label">Password baru</label>
+                <input id="new_password" type="password" name="password" required minlength="8" autocomplete="new-password" class="input">
+            </div>
+            <div>
+                <label for="password_confirmation" class="label">Ulangi password baru</label>
+                <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" class="input">
+            </div>
+        </div>
+        <button class="btn-ghost">Ganti password</button>
     </form>
 @endsection

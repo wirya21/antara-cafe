@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Photo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -114,7 +115,7 @@ class OrderBoardHeroTest extends TestCase
     {
         Storage::fake('public');
 
-        $path = \App\Support\Photo::store(UploadedFile::fake()->image('besar.jpg', 3000, 2000), 'products', 900);
+        $path = Photo::store(UploadedFile::fake()->image('besar.jpg', 3000, 2000), 'products', 900);
 
         [$width, $height] = getimagesizefromstring(Storage::disk('public')->get($path));
         $this->assertSame([900, 600], [$width, $height]);

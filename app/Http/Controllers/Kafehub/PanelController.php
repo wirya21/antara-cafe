@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Kafehub;
 
 use App\Http\Controllers\Controller;
 use App\Support\KafehubContent;
@@ -10,12 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-/** Panel untuk mengubah isi halaman depan kafehub.id. */
-class KafehubController extends Controller
+/** Panel pengelola untuk mengubah isi halaman depan kafehub.id. */
+class PanelController extends Controller
 {
     public function edit(): View
     {
-        return view('admin.kafehub.edit', [
+        return view('panel.edit', [
             'c' => KafehubContent::get(),
             'icons' => LineIcon::options(),
         ]);
@@ -61,6 +61,6 @@ class KafehubController extends Controller
 
         KafehubContent::save($content);
 
-        return redirect()->route('admin.kafehub.edit')->with('status', 'Halaman kafehub.id disimpan.');
+        return redirect()->route('panel.edit')->with('status', 'Halaman kafehub.id disimpan.');
     }
 }
