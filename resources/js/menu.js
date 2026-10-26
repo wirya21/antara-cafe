@@ -14,6 +14,7 @@ export default (menu, initial = {}) => ({
     detailQty: 1,
     hasHistory: savedOrders().length > 0,
     detailNote: '',
+    detailOptions: [],
     customerName: initial.customerName ?? '',
     tableNumber: initial.tableNumber ?? '',
     paymentMethod: initial.paymentMethod ?? '',
@@ -163,11 +164,42 @@ export default (menu, initial = {}) => ({
         this.detail = product;
         this.detailQty = 1;
         this.detailNote = '';
+        this.detailOptions = [];
+    },
+
+    /** Permintaan gratis (tanpa biaya tambahan), disimpan sebagai catatan pesanan. */
+    optionsFor(group) {
+        return group === 'makanan'
+            ? ['Lebih pedas', 'Tidak pedas', 'Tanpa sayur', 'Dibungkus']
+            : ['Kurang gula', 'Tambah gula', 'Tanpa gula', 'Sedikit es', 'Tanpa es', 'Panas'];
+    },
+
+    toggleOption(option) {
+        const i = this.detailOptions.indexOf(option);
+        i === -1 ? this.detailOptions.push(option) : this.detailOptions.splice(i, 1);
+    },
+
+    get detailFullNote() {
+        return [...this.detailOptions, this.detailNote.trim()].filter(Boolean).join(', ').slice(0, 120);
+    },
+
+    /** Minuman yang ditawarkan saat membuka menu makanan; dicatat sebagai item minuman sendiri. */
+    get drinkPairings() {
+        if (this.detail?.group !== 'makanan') return [];
+        return this.allProducts
+            .filter((p) => p.group !== 'makanan' && p.available)
+            .sort((a, b) => Number(b.featured) - Number(a.featured))
+            .slice(0, 8);
     },
 
     addDetail() {
-        this.add(this.detail.id, this.detailQty, this.detailNote.trim());
+        this.add(this.detail.id, this.detailQty, this.detailFullNote);
         this.detail = null;
+    },
+
+    focusSearch() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.$refs.search?.focus();
     },
 
     scrollToCategory(id) {
@@ -184,9 +216,9 @@ export default (menu, initial = {}) => ({
 
     placeholder(group) {
         return {
-            kopi: { emoji: '☕', bg: 'from-[#6f4520] via-[#8c5a2b] to-[#c08a4f]' },
-            minuman: { emoji: '🧋', bg: 'from-[#3f6b5a] via-[#5d8f74] to-[#a9cf9c]' },
-            makanan: { emoji: '🍽️', bg: 'from-[#9a3b2a] via-[#c4613f] to-[#f0a868]' },
-        }[group] ?? { emoji: '☕', bg: 'from-[#6f4520] to-[#c08a4f]' };
+            kopi: { emoji: '☕', bg: 'from-[#fff1e6] to-[#ffd9bd]', tile: 'bg-[#fff1e6]' },
+            minuman: { emoji: '🧋', bg: 'from-[#eaf7ef] to-[#c9ead6]', tile: 'bg-[#eaf7ef]' },
+            makanan: { emoji: '🍽️', bg: 'from-[#fdecec] to-[#fbcfcf]', tile: 'bg-[#fdecec]' },
+        }[group] ?? { emoji: '☕', bg: 'from-[#fff1e6] to-[#ffd9bd]', tile: 'bg-[#fff1e6]' };
     },
 });
