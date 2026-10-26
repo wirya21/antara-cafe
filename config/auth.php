@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\KafehubAdmin;
 use App\Models\User;
 
 return [
@@ -42,6 +43,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Pengelola kafehub.id, terpisah dari akun kafe.
+        'kafehub' => [
+            'driver' => 'session',
+            'provider' => 'kafehub_admins',
+        ],
     ],
 
     /*
@@ -65,6 +72,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'kafehub_admins' => [
+            'driver' => 'eloquent',
+            'model' => KafehubAdmin::class,
         ],
 
         // 'users' => [

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AdminAuthTest extends TestCase
@@ -83,6 +84,6 @@ class AdminAuthTest extends TestCase
         $this->put('/akun/password', ['current_password' => 'lama12345', 'password' => 'baru12345', 'password_confirmation' => 'baru12345'])
             ->assertRedirect(route('cashier.index'));
 
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('baru12345', $user->fresh()->password));
+        $this->assertTrue(Hash::check('baru12345', $user->fresh()->password));
     }
 }

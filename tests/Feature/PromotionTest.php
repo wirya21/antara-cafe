@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class PromotionTest extends TestCase
@@ -27,7 +28,7 @@ class PromotionTest extends TestCase
         $this->latte = Product::create(['category_id' => $category->id, 'name' => 'Caffe Latte', 'slug' => 'caffe-latte', 'price' => 28000]);
     }
 
-    private function order(int $qty, array $extra = []): \Illuminate\Testing\TestResponse
+    private function order(int $qty, array $extra = []): TestResponse
     {
         return $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => $qty]], ...$extra]);
     }

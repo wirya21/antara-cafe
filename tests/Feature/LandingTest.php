@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\KafehubAdmin;
 use App\Models\User;
 use App\Support\LineIcon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class LandingTest extends TestCase
@@ -45,12 +47,18 @@ class LandingTest extends TestCase
         $this->get('http://antara.kafehub.id/kafehub')->assertOk();
     }
 
-    public function test_admin_can_edit_landing_content(): void
+    public function test_kafehub_manager_can_edit_landing_content(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin)->get(route('admin.kafehub.edit'))->assertOk()->assertSee('Pesan lewat QR');
+        $manager = KafehubAdmin::create(['name' => 'Pengelola', 'username' => 'kafehub', 'password' => 'rahasia123']);
 
-        $this->put(route('admin.kafehub.update'), [
+        $this->get('http://kafehub.id/panel')->assertRedirect('http://kafehub.id/panel/masuk');
+        $this->post('http://kafehub.id/panel/masuk', ['username' => 'kafehub', 'password' => 'salah'])->assertSessionHasErrors('username');
+        $this->post('http://kafehub.id/panel/masuk', ['username' => 'kafehub', 'password' => 'rahasia123'])->assertRedirect('http://kafehub.id/panel');
+        $this->assertAuthenticatedAs($manager, 'kafehub');
+
+        $this->get('http://kafehub.id/panel')->assertOk()->assertSee('Pesan lewat QR');
+
+        $this->put('http://kafehub.id/panel', [
             'whatsapp' => '0811 2222 333',
             'hero_title' => 'Kafe ramai,',
             'features' => [
@@ -58,9 +66,9 @@ class LandingTest extends TestCase
                 ['icon' => 'bintang', 'title' => '', 'text' => ''],
             ],
             'faqs' => '',
-        ])->assertSessionHasNoErrors()->assertRedirect(route('admin.kafehub.edit'));
+        ])->assertSessionHasNoErrors()->assertRedirect('http://kafehub.id/panel');
 
-        $this->get('http://antara.kafehub.id/kafehub')->assertOk()
+        $this->get('http://kafehub.id/')->assertOk()
             ->assertSee('Kafe ramai,')
             ->assertSee('jalan lebih rapi.')
             ->assertSee('Menu digital')
@@ -68,11 +76,33 @@ class LandingTest extends TestCase
             ->assertDontSee('Tanya jawab')
             ->assertSee('https://wa.me/628112222333', false)
             ->assertSee(LineIcon::path('kopi'), false);
+
+        $this->put('http://kafehub.id/panel/password', [
+            'current_password' => 'rahasia123', 'password' => 'baru12345', 'password_confirmation' => 'baru12345',
+        ])->assertSessionHasNoErrors();
+        $this->assertTrue(Hash::check('baru12345', $manager->fresh()->password));
     }
 
-    public function test_kasir_cannot_edit_landing(): void
+    public function test_cafe_accounts_cannot_open_kafehub_panel(): void
     {
-        $this->actingAs(User::factory()->create(['role' => 'kasir']))
-            ->put(route('admin.kafehub.update'), ['hero_title' => 'x'])->assertForbidden();
+        $admin = User::factory()->create(['role' => 'admin', 'username' => 'kafehub', 'password' => 'rahasia123']);
+
+        // Akun admin kafe tidak berlaku di panel kafehub, walau username dan password-nya sama.
+        $this->post('http://kafehub.id/panel/masuk', ['username' => 'kafehub', 'password' => 'rahasia123'])->assertSessionHasErrors('username');
+        $this->actingAs($admin)->get('http://kafehub.id/panel')->assertRedirect('http://kafehub.id/panel/masuk');
+        $this->put('http://kafehub.id/panel', ['hero_title' => 'x'])->assertRedirect('http://kafehub.id/panel/masuk');
+    }
+
+    public function test_panel_lives_only_on_main_domain(): void
+    {
+        $this->get('http://antara.kafehub.id/panel')->assertRedirect('http://kafehub.id/panel');
+        $this->get('http://antara.kafehub.id/admin/kafehub')->assertNotFound();
+    }
+
+    public function test_command_creates_panel_account(): void
+    {
+        $this->artisan('kafehub:akun')->assertSuccessful();
+        $this->assertSame(1, KafehubAdmin::where('username', 'kafehub')->count());
+        $this->assertSame(0, User::where('username', 'kafehub')->count());
     }
 }

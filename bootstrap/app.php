@@ -20,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => EnsureUserIsStaff::class,
         ]);
         $middleware->web(prepend: KeepLandingHostOnLanding::class);
-        $middleware->redirectUsersTo(fn (Request $request) => $request->user()->homeRoute());
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('panel', 'panel/*') ? route('panel.login') : route('login'));
+        $middleware->redirectUsersTo(fn (Request $request) => $request->is('panel', 'panel/*') ? route('panel.edit') : $request->user()->homeRoute());
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

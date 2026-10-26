@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class OrderController extends Controller
     {
         return view('admin.orders.show', [
             'order' => $order->load('items', 'cashier', 'member', 'promotion'),
-            'voidedBy' => $order->voided_by ? \App\Models\User::find($order->voided_by) : null,
+            'voidedBy' => $order->voided_by ? User::find($order->voided_by) : null,
         ]);
     }
 
