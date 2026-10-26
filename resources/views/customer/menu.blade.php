@@ -445,14 +445,14 @@
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
                         </button>
                     </div>
-                    <div class="-mt-6 rounded-t-3xl bg-white p-6 pb-4">
+                    <div class="relative -mt-6 rounded-t-3xl bg-white px-6 pt-7 pb-4">
                         <div class="flex items-start justify-between gap-4">
                             <h3 class="text-2xl leading-tight font-extrabold" x-text="detail.name"></h3>
-                            <span class="shrink-0 text-xl font-extrabold text-brand-600" x-text="rupiah(detail.price)"></span>
+                            <span class="shrink-0 pt-1 text-xl leading-tight font-extrabold text-brand-600" x-text="rupiah(detail.price)"></span>
                         </div>
-                        <p x-show="detail.prep" class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">⏱ ± <span x-text="detail.prep"></span> menit dibuat</p>
-                        <p class="mt-3 text-sm leading-relaxed text-gray-600" x-text="detail.description"></p>
-                        <p x-show="detail.left !== null && detail.left <= {{ \App\Models\Product::LOW_SERVINGS }}" class="mt-3 text-sm font-bold text-red-600"
+                        <p class="mt-1 text-sm leading-snug text-gray-500" x-text="detail.description"></p>
+                        <p x-show="detail.prep" class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">⏱ ± <span x-text="detail.prep"></span> menit dibuat</p>
+                        <p x-show="detail.left !== null && detail.left <= {{ \App\Models\Product::LOW_SERVINGS }}" class="mt-2 text-sm font-bold text-red-600"
                            x-text="'Tinggal ' + detail.left + ' porsi hari ini' + (qtyOf(detail.id) ? ' (' + qtyOf(detail.id) + ' sudah di keranjang)' : '')"></p>
 
                         <h4 class="mt-5 text-sm font-bold">Sesuaikan pesanan <span class="font-medium text-green-700">· gratis</span></h4>
