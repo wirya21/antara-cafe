@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\KafehubContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,13 +20,12 @@ class LandingController extends Controller
 
     public function show(): View
     {
-        $whatsapp = config('kafehub.whatsapp');
+        $content = KafehubContent::get();
 
         return view('kafehub', [
-            'joinUrl' => $whatsapp
-                ? 'https://wa.me/'.$whatsapp.'?text='.rawurlencode('Halo kafehub, saya ingin memakai sistem kafehub untuk kafe saya.')
-                : null,
-            'showcase' => config('kafehub.showcase'),
+            'c' => $content,
+            'joinUrl' => KafehubContent::joinUrl($content),
+            'showcase' => $content['showcase'],
         ]);
     }
 }

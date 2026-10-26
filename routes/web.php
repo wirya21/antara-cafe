@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IngredientController;
+use App\Http\Controllers\Admin\KafehubController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrderBoardController;
 use App\Http\Controllers\Admin\OrderController;
@@ -69,6 +70,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('stok', IngredientController::class)->names('ingredients')->parameters(['stok' => 'ingredient']);
     Route::get('resep', [RecipeController::class, 'index'])->name('recipes.index');
     Route::post('stok/{ingredient}/catat', [IngredientController::class, 'move'])->name('ingredients.move');
+
+    Route::get('kafehub', [KafehubController::class, 'edit'])->name('kafehub.edit');
+    Route::put('kafehub', [KafehubController::class, 'update'])->name('kafehub.update');
 
     Route::get('pengaturan', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('pengaturan', [SettingController::class, 'update'])->name('settings.update');
