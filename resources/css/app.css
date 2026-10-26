@@ -20,6 +20,18 @@
     --color-espresso-700: #6f4520;
     --color-espresso-800: #4a2e17;
     --color-espresso-900: #2b1b0e;
+
+    /* Warna aksen halaman pelanggan (menu, status pesanan). Tidak ikut tema admin. */
+    --color-brand-50: #fff5ef;
+    --color-brand-100: #ffe8da;
+    --color-brand-200: #ffcdb0;
+    --color-brand-300: #fdaa7c;
+    --color-brand-400: #fa8048;
+    --color-brand-500: #f4621f;
+    --color-brand-600: #e14d10;
+    --color-brand-700: #bb3b0f;
+    --color-brand-800: #953114;
+    --color-brand-900: #782b14;
 }
 
 @utility input {

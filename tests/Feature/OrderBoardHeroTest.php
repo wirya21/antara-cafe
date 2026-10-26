@@ -91,7 +91,8 @@ class OrderBoardHeroTest extends TestCase
     public function test_hero_image_and_text_can_be_changed(): void
     {
         Storage::fake('public');
-        $this->get('/menu')->assertSee('Mau ngopi apa hari ini?');
+        $this->get('/menu')->assertSee('Mau ngopi apa hari ini?')
+            ->assertSee('Sesuaikan pesanan')->assertSee('Tambah minuman?');
 
         $this->actingAs($this->admin)->put(route('admin.settings.update'), [
             'hero_image' => UploadedFile::fake()->image('kafe.jpg', 1600, 900),

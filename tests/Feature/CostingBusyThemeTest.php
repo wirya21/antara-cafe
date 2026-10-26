@@ -97,12 +97,12 @@ class CostingBusyThemeTest extends TestCase
         $this->get('/menu')->assertDontSee('mungkin sedikit terlambat');
     }
 
-    public function test_theme_overrides_colors_on_every_surface(): void
+    public function test_theme_overrides_staff_colors_but_not_the_customer_menu(): void
     {
         $this->actingAs($this->admin)->put(route('admin.settings.update'), $this->settings(['theme' => 'matcha']));
 
         $this->assertStringContainsString('--color-espresso-500:#5f8a3b', Theme::css());
-        $this->get('/menu')->assertSee('--color-espresso-500:#5f8a3b', false);
+        $this->get('/menu')->assertDontSee('--color-espresso-500:#5f8a3b', false);
         $this->get(route('cashier.index'))->assertSee('--color-espresso-500:#5f8a3b', false);
 
         $this->put(route('admin.settings.update'), $this->settings(['theme' => 'custom', 'theme_color' => '#123ABC']));
