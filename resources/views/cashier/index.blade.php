@@ -96,8 +96,10 @@
             </div>
 
             {{-- Pesanan baru (input kasir) --}}
-            <form x-show="tab === 'baru'" method="POST" action="{{ route('cashier.store') }}" class="flex min-h-0 flex-1 flex-col">
+            <form x-show="tab === 'baru'" method="POST" action="{{ route('cashier.store') }}" class="flex min-h-0 flex-1 flex-col"
+                  x-data="{ askPaid: false, paid: '1', method() { const el = $el.querySelector('input[name=payment_method]:checked'); return el ? el.dataset.label : '' } }">
                 @csrf
+                <input type="hidden" name="paid" :value="paid">
                 <div class="min-h-0 flex-1 overflow-y-auto px-5">
                     <p x-show="!cart.length" class="py-16 text-center text-sm text-espresso-500">Ketuk menu di kiri untuk menambah pesanan.</p>
                     <ul class="divide-y divide-espresso-100">
@@ -130,7 +132,7 @@
                     <div class="grid grid-cols-4 gap-1.5">
                         @foreach ($paymentMethods as $value => $label)
                             <label class="cursor-pointer">
-                                <input type="radio" name="payment_method" value="{{ $value }}" class="peer sr-only" @checked($loop->first)>
+                                <input type="radio" name="payment_method" value="{{ $value }}" data-label="{{ $label }}" class="peer sr-only" @checked($loop->first)>
                                 <span class="block rounded-lg border border-espresso-200 py-2 text-center text-xs font-semibold peer-checked:border-espresso-800 peer-checked:bg-espresso-800 peer-checked:text-white">{{ \Illuminate\Support\Str::before($label, ' ') }}</span>
                             </label>
                         @endforeach
@@ -141,7 +143,22 @@
                     </div>
                     <div class="flex gap-2">
                         <button type="button" @click="cart = []" class="btn-ghost">Kosongkan</button>
-                        <button class="btn-primary flex-1 py-3 text-base">Bayar</button>
+                        <button type="button" @click="if ($el.form.reportValidity()) askPaid = true" class="btn-primary flex-1 py-3 text-base">Bayar</button>
+                    </div>
+                </div>
+
+                {{-- Konfirmasi: uang sudah diterima? Bila belum, pesanan masuk ke Menunggu bayar. --}}
+                <div x-show="askPaid" x-cloak x-transition.opacity class="fixed inset-0 z-50 grid place-items-center bg-espresso-900/60 p-4" @keydown.escape.window="askPaid = false">
+                    <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl" @click.outside="askPaid = false">
+                        <p class="text-sm text-espresso-600">Total yang harus dibayar</p>
+                        <p class="font-display text-3xl font-semibold" x-text="rupiah(total)"></p>
+                        <p class="mt-1 text-sm text-espresso-600">lewat <b x-text="method()"></b></p>
+                        <p class="mt-4 font-semibold">Pembayaran sudah diterima?</p>
+                        <div class="mt-4 space-y-2">
+                            <button type="button" @click="paid = '1'; $nextTick(() => $root.requestSubmit())" class="btn-primary w-full py-3 text-base">✓ Sudah diterima, proses pesanan</button>
+                            <button type="button" @click="paid = '0'; $nextTick(() => $root.requestSubmit())" class="btn-ghost w-full py-3">Belum, simpan ke Menunggu bayar</button>
+                            <button type="button" @click="askPaid = false" class="w-full py-2 text-sm text-espresso-500 hover:underline">Kembali</button>
+                        </div>
                     </div>
                 </div>
             </form>

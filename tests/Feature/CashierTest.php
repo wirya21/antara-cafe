@@ -57,6 +57,24 @@ class CashierTest extends TestCase
         $this->get(route('cashier.receipt', $order))->assertOk()->assertSee('84.000');
     }
 
+    public function test_unpaid_cashier_order_waits_in_pending_until_confirmed(): void
+    {
+        $this->actingAs($this->cashier)->post('/kasir/pesanan', [
+            'payment_method' => 'qris',
+            'paid' => '0',
+            'items' => [['product_id' => $this->latte->id, 'quantity' => 2]],
+        ])->assertRedirect(route('cashier.index'))->assertSessionMissing('receipt');
+
+        $order = Order::latest('id')->first();
+        $this->assertSame('pending', $order->status);
+        $this->assertSame('qris', $order->payment_method);
+        $this->assertNull($order->paid_at);
+        $this->getJson(route('cashier.pending'))->assertJsonFragment(['code' => $order->code]);
+
+        $this->post(route('cashier.pay', $order), ['payment_method' => 'qris'])->assertRedirect();
+        $this->assertSame('paid', $order->fresh()->status);
+    }
+
     public function test_cashier_sees_and_pays_customer_order(): void
     {
         $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);

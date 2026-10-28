@@ -116,20 +116,34 @@ class CashierController extends Controller
             'items.*.note' => ['nullable', 'string', 'max:120'],
             'voucher_code' => ['nullable', 'string', 'max:30'],
             'member_phone' => ['nullable', 'string', 'regex:/^[0-9+\s-]{8,20}$/'],
+            'paid' => ['nullable', 'boolean'],
         ], [
             'member_phone.regex' => 'Nomor HP tidak valid.',
         ]);
 
-        $order = DB::transaction(function () use ($data, $placeOrder, $request) {
+        // Kasir mengonfirmasi uang sudah diterima; bila belum, pesanan menunggu di tab Menunggu bayar.
+        $paid = $request->boolean('paid', true);
+
+        $order = DB::transaction(function () use ($data, $placeOrder, $request, $paid) {
             $order = $placeOrder->handle($data['items'], [
                 'source' => 'kasir',
                 'customer_name' => $data['customer_name'] ?? null,
                 'table_number' => $data['table_number'] ?? null,
+                'payment_method' => $data['payment_method'],
+                'cashier_id' => $request->user()->id,
             ], $data['voucher_code'] ?? null, $data['member_phone'] ?? null);
-            $order->markPaid($data['payment_method'], $request->user());
+
+            if ($paid) {
+                $order->markPaid($data['payment_method'], $request->user());
+            }
 
             return $order;
         });
+
+        if (! $paid) {
+            return redirect()->route('cashier.index')
+                ->with('status', "Pesanan {$order->code} disimpan di Menunggu bayar. Konfirmasi setelah pembayaran diterima.");
+        }
 
         return redirect()->route('cashier.index')
             ->with('status', "Pesanan {$order->code} dibayar.")
