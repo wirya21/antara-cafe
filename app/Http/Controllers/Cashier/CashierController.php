@@ -167,9 +167,7 @@ class CashierController extends Controller
 
     public function cancel(Request $request, Order $order): RedirectResponse
     {
-        abort_unless($order->status === 'pending', 409, 'Pesanan ini sudah diproses.');
-
-        $order->update(['status' => 'cancelled', 'cashier_id' => $request->user()->id]);
+        $order->cancelPending($request->user());
 
         return $this->backTo($request, $order)->with('status', "Pesanan {$order->code} dibatalkan.");
     }

@@ -64,16 +64,16 @@
             </div>
             <div class="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-3 overflow-y-auto p-5 md:grid-cols-3 xl:grid-cols-4">
                 <template x-for="p in products" :key="p.id">
-                    <button type="button" @click="add(p.id)" :disabled="!canAdd(p.id)" class="relative overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-espresso-100 transition hover:ring-espresso-500 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">
-                        <div class="aspect-[4/3] bg-espresso-100">
+                    <button type="button" @click="add(p.id)" :disabled="!canAdd(p.id)" :class="p.left === 0 && 'grayscale'" class="relative overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-espresso-100 transition hover:ring-espresso-500 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">
+                        <div class="relative aspect-[4/3] bg-espresso-100">
                             <template x-if="p.image"><img loading="lazy" decoding="async" :src="p.image" alt="" class="h-full w-full object-cover"></template>
                             <template x-if="!p.image"><div class="grid h-full place-items-center text-4xl" x-text="placeholder(p.group)"></div></template>
+                            <x-sold-stamp x-show="p.left === 0" size="text-xl" />
                         </div>
                         <div class="p-3">
                             <p class="truncate text-sm font-semibold" x-text="p.name"></p>
                             <p class="text-sm font-bold text-espresso-700" x-text="rupiah(p.price)"></p>
                         </div>
-                        <span x-show="p.left === 0" class="absolute top-2 left-2 rounded-full bg-espresso-900 px-2.5 py-1 text-xs font-bold text-white">Habis</span>
                         <span x-show="p.left > 0 && p.left <= {{ \App\Models\Product::LOW_SERVINGS }}" x-text="'Sisa ' + p.left" class="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white"></span>
                         <span x-show="qtyOf(p.id)" x-text="qtyOf(p.id)" class="absolute top-2 right-2 grid h-7 min-w-7 place-items-center rounded-full bg-amber-400 px-2 text-sm font-bold"></span>
                     </button>

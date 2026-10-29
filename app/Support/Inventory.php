@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Inventory
 {
-    /** Kurangi stok sesuai resep dan simpan HPP per item. Dipanggil saat pesanan dibayar. */
+    /** Kurangi stok sesuai resep dan simpan HPP per item. Dipanggil saat pesanan dibuat. */
     public function recordSale(Order $order): void
     {
         $order->loadMissing('items.product.ingredients');
@@ -38,7 +38,7 @@ class Inventory
         }
     }
 
-    /** Kembalikan stok dari pesanan yang dibatalkan setelah dibayar. */
+    /** Kembalikan stok dari pesanan yang dibatalkan. */
     public function reverseSale(Order $order, ?User $user = null): void
     {
         $sales = StockMovement::where('order_id', $order->id)->where('type', 'sale')->get();
