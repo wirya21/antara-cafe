@@ -121,14 +121,15 @@
             <h2 class="text-lg font-bold">Favorit pelanggan</h2>
             <div class="no-scrollbar -mx-4 mt-3 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:scroll-px-6 sm:px-6">
                 <template x-for="p in featured" :key="'f' + p.id">
-                    <article class="w-56 shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
-                        <button type="button" @click="openDetail(p)" class="relative block aspect-[4/3] w-full overflow-hidden">
+                    <article class="w-56 shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100" :class="!p.available && 'opacity-60 grayscale'">
+                        <button type="button" @click="openDetail(p)" :disabled="!p.available" class="relative block aspect-[4/3] w-full overflow-hidden">
                             <template x-if="p.image"><img loading="lazy" decoding="async" :src="p.image" :alt="p.name" class="h-full w-full object-cover"></template>
                             <template x-if="!p.image"><span class="grid h-full w-full place-items-center bg-gradient-to-br text-5xl" :class="placeholder(p.group).bg" x-text="placeholder(p.group).emoji"></span></template>
                             <span x-show="qtyOf(p.id)" x-text="qtyOf(p.id) + ' di keranjang'" class="absolute top-2 left-2 rounded-full bg-brand-500 px-2.5 py-1 text-[11px] font-bold text-white shadow"></span>
+                            <x-sold-stamp x-show="!p.available" size="text-xl" />
                         </button>
                         <div class="flex items-end justify-between gap-2 p-3">
-                            <button type="button" @click="openDetail(p)" class="min-w-0 text-left">
+                            <button type="button" @click="openDetail(p)" :disabled="!p.available" class="min-w-0 text-left">
                                 <p class="truncate text-sm font-bold" x-text="p.name"></p>
                                 <p class="mt-0.5 text-sm font-semibold text-gray-600" x-text="rupiah(p.price)"></p>
                             </button>
@@ -162,11 +163,11 @@
                 </h2>
                 <div class="mt-3 grid gap-3 md:grid-cols-2">
                     <template x-for="p in c.products" :key="p.id">
-                        <article class="flex gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100" :class="!p.available && 'opacity-60'">
+                        <article class="flex gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition" :class="!p.available && 'opacity-60 grayscale'">
                             <button type="button" @click="openDetail(p)" :disabled="!p.available" class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-28">
                                 <template x-if="p.image"><img :src="p.image" :alt="p.name" loading="lazy" decoding="async" class="h-full w-full object-cover"></template>
                                 <template x-if="!p.image"><span class="grid h-full w-full place-items-center bg-gradient-to-br text-4xl" :class="placeholder(p.group).bg" x-text="placeholder(p.group).emoji"></span></template>
-                                <span x-show="!p.available" class="absolute inset-0 grid place-items-center bg-black/45 text-xs font-bold text-white">Habis</span>
+                                <x-sold-stamp x-show="!p.available" />
                             </button>
                             <div class="flex min-w-0 flex-1 flex-col">
                                 <button type="button" @click="openDetail(p)" :disabled="!p.available" class="text-left">

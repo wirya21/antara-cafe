@@ -65,7 +65,7 @@ class MenuStockTest extends TestCase
         $this->milk->update(['stock' => 100]);
 
         $this->get('/menu')->assertOk()->assertSee('\u0022left\u0022:0', false)->assertSee('\u0022available\u0022:false', false);
-        $this->get('/layar')->assertOk()->assertSee('HABIS');
+        $this->get('/layar')->assertOk()->assertSee('SOLD');
     }
 
     public function test_order_over_stock_is_rejected(): void

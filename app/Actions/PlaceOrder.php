@@ -88,6 +88,9 @@ class PlaceOrder
                 'total' => $subtotal - $discount,
             ]);
 
+            // Stok langsung dipotong agar menu yang habis tidak bisa dipesan lagi selama pesanan menunggu bayar.
+            $order->reserveStock();
+
             return $order;
         });
     }
