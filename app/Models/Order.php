@@ -112,8 +112,29 @@ class Order extends Model
             abort_if($updated === 0, 409, 'Pesanan ini sudah dibayar atau dibatalkan.');
 
             $this->refresh();
-            app(Inventory::class)->recordSale($this);
+            // Stok biasanya sudah dipotong saat pesanan dibuat; ini untuk pesanan lama yang belum.
+            $this->reserveStock();
             $this->member?->increment('points', intdiv($this->total, Member::RUPIAH_PER_POINT));
+        });
+    }
+
+    /** Potong stok bahan sesuai resep, sekali saja per pesanan. */
+    public function reserveStock(): void
+    {
+        if (! StockMovement::where('order_id', $this->id)->where('type', 'sale')->exists()) {
+            app(Inventory::class)->recordSale($this);
+        }
+    }
+
+    /** Batalkan pesanan yang belum dibayar dan kembalikan stok yang sudah dipotong. */
+    public function cancelPending(User $by): void
+    {
+        DB::transaction(function () use ($by) {
+            $updated = static::whereKey($this->id)->where('status', 'pending')->update(['status' => 'cancelled', 'cashier_id' => $by->id]);
+            abort_if($updated === 0, 409, 'Pesanan ini sudah diproses.');
+
+            $this->refresh();
+            app(Inventory::class)->reverseSale($this, $by);
         });
     }
 

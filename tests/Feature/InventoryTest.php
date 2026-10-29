@@ -76,16 +76,37 @@ class InventoryTest extends TestCase
         $this->assertDatabaseHas('stock_movements', ['ingredient_id' => $this->coffee->id, 'type' => 'sale', 'quantity' => -36]);
     }
 
-    public function test_pending_customer_order_does_not_touch_stock_until_paid(): void
+    public function test_pending_order_reserves_stock_once_and_cancel_returns_it(): void
     {
         $this->setRecipe();
         $this->post('/logout');
 
         $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
-        $this->assertEquals(1000, $this->coffee->fresh()->stock);
+        $this->assertEquals(982, $this->coffee->fresh()->stock);
 
+        // Dibayar tidak memotong stok dua kali.
         $this->actingAs($this->admin)->post(route('cashier.pay', Order::first()), ['payment_method' => 'qris']);
         $this->assertEquals(982, $this->coffee->fresh()->stock);
+
+        $this->post('/logout');
+        $this->post('/menu/pesan', ['customer_name' => 'Budi', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 2]]]);
+        $this->assertEquals(946, $this->coffee->fresh()->stock);
+
+        $this->actingAs($this->admin)->post(route('cashier.cancel', Order::latest('id')->first()));
+        $this->assertEquals(982, $this->coffee->fresh()->stock);
+    }
+
+    public function test_pending_orders_make_menu_sold_out(): void
+    {
+        $this->setRecipe();
+        $this->coffee->update(['stock' => 18]);
+        $this->post('/logout');
+
+        $this->post('/menu/pesan', ['customer_name' => 'Sari', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]]);
+
+        $this->assertSame(0, $this->latte->fresh()->load('ingredients')->servingsLeft());
+        $this->post('/menu/pesan', ['customer_name' => 'Budi', 'payment_method' => 'tunai', 'items' => [['product_id' => $this->latte->id, 'quantity' => 1]]])
+            ->assertSessionHasErrors('items');
     }
 
     public function test_void_returns_stock(): void
