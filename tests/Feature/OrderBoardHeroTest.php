@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Photo;
+use App\Support\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -109,6 +110,24 @@ class OrderBoardHeroTest extends TestCase
         $this->assertNull(Setting::get('hero_image_path'));
         Storage::disk('public')->assertMissing($path);
         $this->get('/menu')->assertSee('Mau ngopi apa hari ini?');
+    }
+
+    public function test_cafe_logo_can_be_uploaded_and_removed(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->admin)->put(route('admin.settings.update'), [
+            'logo' => UploadedFile::fake()->image('logo.png', 512, 512),
+        ])->assertSessionHasNoErrors();
+
+        $path = Tenant::cafe()->fresh()->logo_path;
+        Storage::disk('public')->assertExists($path);
+        $this->get('/menu')->assertSee(basename($path));
+        $this->get('/kasir')->assertSee(basename($path));
+
+        $this->put(route('admin.settings.update'), ['remove_logo' => '1'])->assertSessionHasNoErrors();
+        $this->assertNull(Tenant::cafe()->fresh()->logo_path);
+        Storage::disk('public')->assertMissing($path);
     }
 
     public function test_large_uploads_are_shrunk_for_the_web(): void

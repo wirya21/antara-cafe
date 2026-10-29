@@ -32,6 +32,7 @@ class SettingController extends Controller
             'busy' => Busy::on(),
             'busyMessage' => Setting::get('busy_message'),
             'busyExtra' => (int) Setting::get('busy_extra_minutes', '10'),
+            'logoUrl' => Tenant::cafe()?->logoUrl(),
             'heroUrl' => ($hero = Setting::get('hero_image_path')) ? Storage::disk('public')->url($hero) : null,
             'heroTitle' => Setting::get('hero_title'),
             'heroSubtitle' => Setting::get('hero_subtitle'),
@@ -54,6 +55,8 @@ class SettingController extends Controller
             'op_monthly_servings' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'busy_message' => ['nullable', 'string', 'max:200'],
             'busy_extra_minutes' => ['nullable', 'integer', 'min:0', 'max:120'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
             'hero_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'remove_hero_image' => ['nullable', 'boolean'],
             'hero_title' => ['nullable', 'string', 'max:80'],
@@ -72,6 +75,18 @@ class SettingController extends Controller
         }
         if ($old && $old !== Setting::get('qris_image_path')) {
             Storage::disk('public')->delete($old);
+        }
+
+        $cafe = Tenant::cafe();
+        $oldLogo = $cafe->logo_path;
+        if ($request->hasFile('logo')) {
+            // Disimpan apa adanya agar logo PNG transparan tetap transparan.
+            $cafe->update(['logo_path' => $request->file('logo')->store('logo', 'public')]);
+        } elseif ($request->boolean('remove_logo')) {
+            $cafe->update(['logo_path' => null]);
+        }
+        if ($oldLogo && $oldLogo !== $cafe->logo_path) {
+            Storage::disk('public')->delete($oldLogo);
         }
 
         $oldHero = Setting::get('hero_image_path');

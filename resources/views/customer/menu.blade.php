@@ -30,7 +30,7 @@
                         <span x-text="tableNumber ? 'Makan di meja ' + tableNumber : 'Pesan dari mana saja'"></span>
                     </p>
                     <p class="mt-1 flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-lg shadow-md shadow-brand-500/30">☕</span>
+                        <x-cafe-logo class="h-9 w-9 rounded-xl ring-1 ring-gray-200"><span class="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-lg shadow-md shadow-brand-500/30">☕</span></x-cafe-logo>
                         @php [$brandA, $brandB] = $cafe->brandParts(); @endphp
                         <span>{{ $brandA }}<span class="text-brand-500">{{ $brandB }}</span></span>
                     </p>

@@ -11,7 +11,7 @@
 <body class="flex min-h-screen items-center justify-center bg-espresso-900 bg-[radial-gradient(circle_at_top,var(--color-espresso-700),var(--color-espresso-900)_60%)] px-4 font-sans antialiased">
     <div class="w-full max-w-sm">
         <div class="mb-6 text-center text-espresso-50">
-            <div class="text-4xl">☕</div>
+            <x-cafe-logo class="mx-auto h-16 w-16 rounded-2xl"><div class="text-4xl">☕</div></x-cafe-logo>
             <h1 class="mt-2 text-2xl font-semibold">{{ $cafe?->name }}</h1>
             <p class="text-sm text-espresso-200">Masuk sebagai admin atau kasir</p>
         </div>

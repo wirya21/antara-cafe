@@ -37,14 +37,14 @@
         <template x-if="!slides.length">
             <div class="grid h-full place-items-center text-center">
                 <div>
-                    <div class="text-[10vw]">☕</div>
+                    <x-cafe-logo class="mx-auto h-[12vw] w-[12vw] rounded-[2vw]"><div class="text-[10vw]">☕</div></x-cafe-logo>
                     <p class="font-display text-[4vw] font-semibold">{{ $cafe?->name }}</p>
                 </div>
             </div>
         </template>
 
         <div class="absolute top-[2vw] left-[2vw] flex items-center gap-[.8vw] rounded-full bg-black/30 px-[1.2vw] py-[.6vw] backdrop-blur">
-            <span class="text-[1.6vw]">☕</span>
+            <x-cafe-logo class="h-[2.4vw] w-[2.4vw] rounded-full"><span class="text-[1.6vw]">☕</span></x-cafe-logo>
             <span class="font-display text-[1.6vw] font-semibold">{{ $cafe?->name }}</span>
         </div>
         <div class="absolute top-[2vw] right-[2vw] flex gap-[.5vw]">
