@@ -1,6 +1,6 @@
 {
-  "_browser-DwDA2okr.js": {
-    "file": "assets/browser-DwDA2okr.js",
+  "_browser-v9r_qJtq.js": {
+    "file": "assets/browser-v9r_qJtq.js",
     "name": "browser"
   },
   "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2": {
@@ -31,8 +31,17 @@
     "file": "assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2",
     "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
   },
+  "node_modules/jsqr/dist/jsQR.js": {
+    "file": "assets/jsQR-DJwcytvG.js",
+    "name": "jsQR",
+    "src": "node_modules/jsqr/dist/jsQR.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_browser-v9r_qJtq.js"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-CHLHBNSP.css",
+    "file": "assets/app-DrjUBHGm.css",
     "name": "app",
     "names": [
       "app.css"
@@ -50,21 +59,24 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DKPhk_pa.js",
+    "file": "assets/app-CqGiu6uQ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_browser-DwDA2okr.js"
+      "_browser-v9r_qJtq.js"
+    ],
+    "dynamicImports": [
+      "node_modules/jsqr/dist/jsQR.js"
     ]
   },
   "resources/js/receipt.js": {
-    "file": "assets/receipt-C70Rv3w9.js",
+    "file": "assets/receipt-BtWIJJPn.js",
     "name": "receipt",
     "src": "resources/js/receipt.js",
     "isEntry": true,
     "imports": [
-      "_browser-DwDA2okr.js"
+      "_browser-v9r_qJtq.js"
     ]
   }
 }

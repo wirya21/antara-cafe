@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Promotion;
 use App\Models\Setting;
 use App\Support\Busy;
+use App\Support\Qris;
 use App\Support\WhatsApp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -141,6 +142,7 @@ class MenuController extends Controller
         return view('customer.order', [
             'order' => $order->load('items.product'),
             'qrisUrl' => $qris ? Storage::disk('public')->url($qris) : null,
+            'qrisCode' => $qris ? Qris::withAmount(Setting::get('qris_payload'), $order->total) : null,
             'bankAccounts' => Setting::get('bank_accounts'),
             'paymentMethods' => Order::availableSelfPaymentMethods(),
             'estimate' => $order->estimatedMinutes(),
