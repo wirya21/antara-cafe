@@ -7,11 +7,13 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Qris;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Tests\Unit\QrisTest;
 
 class PaymentFlowTest extends TestCase
 {
@@ -195,6 +197,25 @@ class PaymentFlowTest extends TestCase
         $this->placeOrder('qris');
 
         Http::assertNothingSent();
+    }
+
+    public function test_qris_code_gets_the_order_total_so_customers_do_not_type_it(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->put(route('admin.settings.update'), ['qris_payload' => 'bukan qris'])
+            ->assertSessionHasErrors('qris_payload');
+        $this->put(route('admin.settings.update'), ['qris_payload' => QrisTest::STATIC])->assertSessionHasNoErrors();
+        $this->assertSame(QrisTest::STATIC, Setting::get('qris_payload'));
+        $this->post('/logout');
+
+        $order = $this->placeOrder('qris');
+
+        $this->get(route('menu.order', $order))->assertOk()
+            ->assertSee(Qris::withAmount(QrisTest::STATIC, 28000))
+            ->assertSee('sudah terisi otomatis');
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), ['remove_image' => '1']);
+        $this->assertNull(Setting::get('qris_payload'));
     }
 
     public function test_admin_saves_payment_and_whatsapp_settings(): void

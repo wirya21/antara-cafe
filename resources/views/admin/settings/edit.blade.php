@@ -13,9 +13,19 @@
                 <p class="text-sm text-espresso-600">Ditampilkan ke pelanggan yang memilih QRIS atau transfer. Pelanggan lalu mengunggah bukti bayar, dan staf menekan <b>Konfirmasi pembayaran</b>. Pilihan QRIS/transfer baru muncul di menu pelanggan setelah diisi.</p>
             </div>
 
-            <div>
+            <div x-data="qrisReader(@js(old('qris_payload', $qrisPayload)))" @change="read($event)">
                 <p class="label">Gambar QRIS kafe</p>
-                <div class="max-w-xs"><x-image-input :url="$qrisUrl" aspect="aspect-square" hint="Unduh QRIS statis dari aplikasi bank/merchant Anda (JPG/PNG, maks 3 MB)." /></div>
+                <div class="max-w-xs"><x-image-input :url="$qrisUrl" aspect="aspect-square" hint="Unduh QRIS statis dari aplikasi bank/merchant Anda (JPG/PNG, maks 3 MB). Pakai gambar asli yang tajam, bukan foto layar miring." /></div>
+                <input type="hidden" name="qris_payload" :value="payload">
+                <p x-show="state === 'reading'" x-cloak class="mt-2 text-sm text-espresso-600">Membaca QRIS…</p>
+                <p x-show="state === 'ok'" x-cloak class="mt-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">✓ Nominal otomatis aktif. Pelanggan cukup scan, total pesanan sudah terisi.</p>
+                <p x-show="state === 'failed'" x-cloak class="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">QRIS di gambar ini tidak terbaca, jadi pelanggan masih harus mengetik nominal. Coba gambar yang lebih jelas, atau tempel kodenya di bawah.</p>
+                <p x-show="state === 'empty' && {{ $qrisUrl ? 'true' : 'false' }}" x-cloak class="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">Nominal otomatis belum aktif. Unggah ulang gambar QRIS agar terbaca.</p>
+                @error('qris_payload') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                <details class="mt-2 text-sm">
+                    <summary class="cursor-pointer text-espresso-600">Tempel kode QRIS manual</summary>
+                    <textarea x-model="payload" @input="state = payload ? 'ok' : 'empty'" rows="3" class="input mt-2 font-mono text-xs" placeholder="000201010211…"></textarea>
+                </details>
                 @if ($qrisUrl)
                     <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="remove_image" value="1"> Hapus QRIS</label>
                 @endif

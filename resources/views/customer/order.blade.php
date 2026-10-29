@@ -131,7 +131,16 @@
 
                 <div class="space-y-4 p-5">
                     @if ($method === 'qris')
-                        @if ($qrisUrl)
+                        @if ($qrisCode)
+                            <div x-data="qrisCode(@js($qrisCode))" class="space-y-4">
+                                <div class="mx-auto max-w-[260px] overflow-hidden rounded-2xl bg-white p-2 ring-1 ring-gray-100">
+                                    <img :src="src" x-show="src" alt="QRIS {{ $cafe?->name }} sebesar Rp{{ number_format($order->total, 0, ',', '.') }}" class="aspect-square w-full">
+                                    <div x-show="!src" class="aspect-square w-full animate-pulse rounded-xl bg-gray-100"></div>
+                                </div>
+                                <p class="text-center text-sm text-gray-500">Scan dengan aplikasi bank atau e-wallet. Nominal <b><x-rupiah :value="$order->total" /></b> sudah terisi otomatis, tinggal bayar lalu screenshot buktinya.</p>
+                                <a :href="src" download="qris-{{ $order->code }}.png" class="block w-full rounded-xl border border-gray-200 py-2.5 text-center text-sm font-semibold text-gray-700">Simpan gambar QRIS</a>
+                            </div>
+                        @elseif ($qrisUrl)
                             <div class="mx-auto max-w-[260px] overflow-hidden rounded-2xl bg-white p-2 ring-1 ring-gray-100">
                                 <img src="{{ $qrisUrl }}" alt="QRIS {{ $cafe?->name }}" class="w-full">
                             </div>

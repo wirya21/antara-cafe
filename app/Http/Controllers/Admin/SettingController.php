@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Support\Busy;
 use App\Support\Costing;
 use App\Support\Photo;
+use App\Support\Qris;
 use App\Support\Tenant;
 use App\Support\Theme;
 use App\Support\WhatsApp;
@@ -22,6 +23,7 @@ class SettingController extends Controller
         $qris = Setting::get('qris_image_path');
 
         return view('admin.settings.edit', [
+            'qrisPayload' => Setting::get('qris_payload'),
             'qrisUrl' => $qris ? Storage::disk('public')->url($qris) : null,
             'bankAccounts' => Setting::get('bank_accounts'),
             'whatsappNumbers' => Setting::get('whatsapp_numbers'),
@@ -46,6 +48,11 @@ class SettingController extends Controller
         $data = $request->validate([
             'image' => ['nullable', 'image', 'max:3072'],
             'remove_image' => ['nullable', 'boolean'],
+            'qris_payload' => ['nullable', 'string', 'max:512', function ($attribute, $value, $fail) {
+                if (! Qris::isValid($value)) {
+                    $fail('Kode QRIS tidak sah. Pastikan yang ditempel kode QRIS statis lengkap, diawali 000201.');
+                }
+            }],
             'bank_accounts' => ['nullable', 'string', 'max:500'],
             'whatsapp_numbers' => ['nullable', 'string', 'max:200', 'regex:/^[0-9+\s,;-]*$/'],
             'fonnte_token' => ['nullable', 'string', 'max:100'],
@@ -75,6 +82,11 @@ class SettingController extends Controller
         }
         if ($old && $old !== Setting::get('qris_image_path')) {
             Storage::disk('public')->delete($old);
+        }
+        if ($request->boolean('remove_image')) {
+            Setting::put('qris_payload', null);
+        } elseif ($request->has('qris_payload')) {
+            Setting::put('qris_payload', filled($data['qris_payload']) ? trim($data['qris_payload']) : null);
         }
 
         $cafe = Tenant::cafe();
