@@ -13,7 +13,7 @@
 
     <header class="flex items-center justify-between gap-4 bg-espresso-900 px-5 py-3 text-espresso-50">
         <div class="flex items-center gap-3">
-            <span class="grid h-9 w-9 place-items-center rounded-full bg-espresso-50 text-lg">☕</span>
+            <x-cafe-logo class="h-9 w-9 rounded-full"><span class="grid h-9 w-9 place-items-center rounded-full bg-espresso-50 text-lg">☕</span></x-cafe-logo>
             <div>
                 <p class="font-display text-lg leading-none font-semibold">{{ $cafe?->name }}</p>
                 <a href="{{ route('password.edit') }}" class="text-xs text-espresso-200 hover:underline">Kasir · {{ auth()->user()->name }}</a>

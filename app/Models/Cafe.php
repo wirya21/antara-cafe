@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 /** Kafe yang memakai kafehub, masing-masing di {slug}.kafehub.id. */
-#[Fillable(['name', 'slug', 'owner_name', 'owner_phone', 'city', 'is_active', 'is_trial', 'active_until', 'monthly_fee', 'notes'])]
+#[Fillable(['name', 'logo_path', 'slug', 'owner_name', 'owner_phone', 'city', 'is_active', 'is_trial', 'active_until', 'monthly_fee', 'notes'])]
 class Cafe extends Model
 {
     /** Subdomain yang tidak boleh dipakai kafe. */
@@ -63,6 +64,11 @@ class Cafe extends Model
         $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
 
         return $scheme.'://'.$this->slug.'.'.config('kafehub.domain').($path === '/' ? '' : '/'.ltrim($path, '/'));
+    }
+
+    public function logoUrl(): ?string
+    {
+        return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;
     }
 
     /** Nama untuk logo: kata terakhir diberi warna aksen bila namanya lebih dari satu kata. */

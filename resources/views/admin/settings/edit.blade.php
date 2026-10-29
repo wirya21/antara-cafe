@@ -114,6 +114,20 @@
             </div>
         </div>
 
+        {{-- Logo kafe --}}
+        <div class="card space-y-4 p-4 sm:p-6 lg:col-span-2">
+            <div>
+                <h2 class="text-lg font-semibold">Logo kafe</h2>
+                <p class="text-sm text-espresso-600">Tampil di menu pelanggan, kasir, layar TV, halaman login, dan panel admin. Bila kosong, dipakai ikon ☕.</p>
+            </div>
+            <div class="max-w-48">
+                <x-image-input name="logo" :url="$logoUrl" aspect="aspect-square" hint="PNG (boleh transparan), JPG, atau WebP, maks 2 MB. Bentuk persegi, minimal 256×256." />
+                @if ($logoUrl)
+                    <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="remove_logo" value="1"> Hapus logo</label>
+                @endif
+            </div>
+        </div>
+
         {{-- Hero menu pelanggan --}}
         <div class="card space-y-4 p-4 sm:p-6 lg:col-span-2">
             <div>

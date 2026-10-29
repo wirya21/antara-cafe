@@ -39,7 +39,7 @@
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <div class="min-w-0 flex-1">
-                <p class="text-xs leading-none text-espresso-200">☕ {{ $cafe?->name }}</p>
+                <p class="flex items-center gap-1.5 text-xs leading-none text-espresso-200"><x-cafe-logo class="h-4 w-4 rounded">☕</x-cafe-logo> {{ $cafe?->name }}</p>
                 <p class="mt-1 truncate text-base leading-tight font-semibold">@yield('title')</p>
             </div>
             <x-order-alerts :href="route('admin.board.index')" dark />
@@ -51,7 +51,7 @@
                :class="navOpen && 'translate-x-0'" @keydown.escape.window="navOpen = false">
             <div class="flex items-center justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-4 md:py-6">
                 <div>
-                    <a href="{{ route('admin.dashboard') }}" class="text-lg font-semibold tracking-wide text-white">☕ {{ $cafe?->name }}</a>
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-lg font-semibold tracking-wide text-white"><x-cafe-logo class="h-8 w-8 rounded-lg">☕</x-cafe-logo> {{ $cafe?->name }}</a>
                     <p class="mt-1 text-xs text-espresso-200">Panel admin</p>
                 </div>
                 <button type="button" @click="navOpen = false" class="grid h-9 w-9 place-items-center rounded-xl bg-white/10 md:hidden" aria-label="Tutup menu">✕</button>
