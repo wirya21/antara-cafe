@@ -10,6 +10,8 @@ export default (menu, pending, processing, pendingUrl) => ({
     tab: pending.length ? 'masuk' : 'baru',
     newArrivals: false,
     now: Date.now(),
+    picker: null,
+    pickerAddons: [],
 
     rupiah,
 
@@ -50,9 +52,39 @@ export default (menu, pending, processing, pendingUrl) => ({
 
     add(id) {
         if (!this.canAdd(id)) return;
-        const line = this.cart.find((l) => l.id === id);
-        line ? line.qty++ : this.cart.push({ id, qty: 1, note: '' });
+        // Menu bertopping: pilih toppingnya dulu.
+        if (this.product(id).addons?.length) {
+            this.picker = this.product(id);
+            this.pickerAddons = [];
+            return;
+        }
+        this.addLine(id, []);
+    },
+
+    addLine(id, addons) {
+        const key = [...addons].sort((a, b) => a - b).join(',');
+        const line = this.cart.find((l) => l.id === id && (l.addons ?? []).join(',') === key);
+        line ? line.qty++ : this.cart.push({ id, qty: 1, note: '', addons: key ? key.split(',').map(Number) : [] });
         this.tab = 'baru';
+    },
+
+    togglePickerAddon(id) {
+        const i = this.pickerAddons.indexOf(id);
+        i === -1 ? this.pickerAddons.push(id) : this.pickerAddons.splice(i, 1);
+    },
+
+    confirmPicker() {
+        this.addLine(this.picker.id, this.pickerAddons);
+        this.picker = null;
+    },
+
+    addonsOf(line) {
+        const product = this.product(line.id);
+        return (line.addons ?? []).map((id) => product.addons.find((a) => a.id === id)).filter(Boolean);
+    },
+
+    unitPrice(line) {
+        return this.product(line.id).price + this.addonsOf(line).reduce((sum, a) => sum + a.price, 0);
     },
 
     change(index, delta) {
@@ -62,11 +94,11 @@ export default (menu, pending, processing, pendingUrl) => ({
     },
 
     qtyOf(id) {
-        return this.cart.find((l) => l.id === id)?.qty ?? 0;
+        return this.cart.filter((l) => l.id === id).reduce((sum, l) => sum + l.qty, 0);
     },
 
     get total() {
-        return this.cart.reduce((sum, l) => sum + l.qty * this.product(l.id).price, 0);
+        return this.cart.reduce((sum, l) => sum + l.qty * this.unitPrice(l), 0);
     },
 
     /** Lama menunggu dalam menit, sejak masuk (belum bayar) atau sejak dibayar (sedang dibuat). */

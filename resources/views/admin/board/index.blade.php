@@ -80,6 +80,7 @@
                             @foreach ($order->items as $item)
                                 <li>
                                     <span class="font-semibold tabular-nums">{{ $item->quantity }}×</span> {{ $item->product_name }}
+                                    @if ($item->addons)<span class="block pl-6 text-sm font-semibold text-espresso-800">{{ $item->addonText() }}</span>@endif
                                     @if ($item->note)<span class="block pl-6 text-xs text-amber-700">“{{ $item->note }}”</span>@endif
                                 </li>
                             @endforeach

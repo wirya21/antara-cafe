@@ -19,7 +19,7 @@
                 <tbody class="divide-y divide-espresso-50">
                     @foreach ($order->items as $item)
                         <tr>
-                            <td class="py-2">{{ $item->product_name }} @if ($item->note)<span class="block text-xs text-espresso-500">{{ $item->note }}</span>@endif</td>
+                            <td class="py-2">{{ $item->product_name }} @if ($item->addons)<span class="block text-xs font-medium text-espresso-700">{{ $item->addonText() }}</span>@endif @if ($item->note)<span class="block text-xs text-espresso-500">{{ $item->note }}</span>@endif</td>
                             <td class="py-2 text-right">{{ $item->quantity }}</td>
                             <td class="py-2 text-right tabular-nums"><x-rupiah :value="$item->price" /></td>
                             <td class="py-2 text-right text-espresso-500 tabular-nums"><x-rupiah :value="$item->cost" /></td>

@@ -103,12 +103,13 @@
                 <div class="min-h-0 flex-1 overflow-y-auto px-5">
                     <p x-show="!cart.length" class="py-16 text-center text-sm text-espresso-500">Ketuk menu di kiri untuk menambah pesanan.</p>
                     <ul class="divide-y divide-espresso-100">
-                        <template x-for="(line, i) in cart" :key="line.id">
+                        <template x-for="(line, i) in cart" :key="i + '-' + line.id + '-' + (line.addons ?? []).join(',')">
                             <li class="py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-semibold" x-text="product(line.id).name"></p>
-                                        <p class="text-sm text-espresso-600" x-text="rupiah(product(line.id).price * line.qty)"></p>
+                                        <p x-show="addonsOf(line).length" class="truncate text-xs font-medium text-espresso-700" x-text="addonsOf(line).map(a => '+ ' + a.name).join(', ')"></p>
+                                        <p class="text-sm text-espresso-600" x-text="rupiah(unitPrice(line) * line.qty)"></p>
                                     </div>
                                     <button type="button" @click="change(i, -1)" class="grid h-8 w-8 place-items-center rounded-full bg-espresso-100 font-bold">−</button>
                                     <span class="w-5 text-center font-bold" x-text="line.qty"></span>
@@ -117,6 +118,9 @@
                                 <input x-model="line.note" :name="`items[${i}][note]`" maxlength="120" placeholder="Catatan (opsional)" class="mt-2 w-full rounded-md border border-espresso-100 px-2 py-1 text-xs">
                                 <input type="hidden" :name="`items[${i}][product_id]`" :value="line.id">
                                 <input type="hidden" :name="`items[${i}][quantity]`" :value="line.qty">
+                                <template x-for="addonId in (line.addons ?? [])" :key="addonId">
+                                    <input type="hidden" :name="`items[${i}][addons][]`" :value="addonId">
+                                </template>
                             </li>
                         </template>
                     </ul>
@@ -185,6 +189,7 @@
                         <ul class="mt-2 space-y-0.5 text-sm">
                             <template x-for="item in o.items">
                                 <li><b x-text="item.quantity + '×'"></b> <span x-text="item.name"></span>
+                                    <span x-show="item.addons" class="text-xs font-semibold text-espresso-700" x-text="item.addons"></span>
                                     <span x-show="item.note" class="text-xs text-espresso-500" x-text="'(' + item.note + ')'"></span></li>
                             </template>
                         </ul>
@@ -228,6 +233,7 @@
                         <ul class="mt-2 space-y-0.5 text-sm">
                             <template x-for="item in o.items">
                                 <li><b x-text="item.quantity + '×'"></b> <span x-text="item.name"></span>
+                                    <span x-show="item.addons" class="text-xs font-semibold text-espresso-700" x-text="item.addons"></span>
                                     <span x-show="item.note" class="text-xs text-espresso-500" x-text="'(' + item.note + ')'"></span></li>
                             </template>
                         </ul>
@@ -239,6 +245,30 @@
                 </template>
             </div>
         </aside>
+    </div>
+
+    {{-- Pilih topping untuk menu yang punya topping berbayar --}}
+    <div x-show="picker" x-cloak class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" @keydown.escape.window="picker = null" @click.self="picker = null">
+        <template x-if="picker">
+            <div class="w-full max-w-sm rounded-2xl bg-white p-5 text-espresso-900 shadow-2xl">
+                <p class="text-sm text-espresso-600">Pilih topping</p>
+                <p class="font-display text-xl font-semibold" x-text="picker.name"></p>
+                <div class="mt-3 max-h-[50vh] space-y-2 overflow-y-auto">
+                    <template x-for="addon in picker.addons" :key="addon.id">
+                        <label class="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition" :class="pickerAddons.includes(addon.id) ? 'border-espresso-700 bg-espresso-50' : 'border-espresso-100'">
+                            <input type="checkbox" class="h-4 w-4 accent-espresso-800" :checked="pickerAddons.includes(addon.id)" @change="togglePickerAddon(addon.id)">
+                            <span class="flex-1 font-medium" x-text="addon.name"></span>
+                            <span class="text-sm font-semibold text-espresso-700" x-text="'+' + rupiah(addon.price)"></span>
+                        </label>
+                    </template>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button type="button" @click="picker = null" class="btn-ghost">Batal</button>
+                    <button type="button" @click="confirmPicker()" class="btn-primary flex-1"
+                            x-text="'Tambah · ' + rupiah(picker.price + picker.addons.filter(a => pickerAddons.includes(a.id)).reduce((s, a) => s + a.price, 0))"></button>
+                </div>
+            </div>
+        </template>
     </div>
 </div>
 </body>

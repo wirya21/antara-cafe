@@ -79,7 +79,7 @@ class WhatsApp
             $order->table_number ? "Meja: {$order->table_number}" : 'Dibawa pulang',
             'Bayar: '.(Order::PAYMENT_METHODS[$order->payment_method] ?? '-'),
             '',
-            ...$order->items->map(fn ($i) => "{$i->quantity}x {$i->product_name}".($i->note ? " ({$i->note})" : '')),
+            ...$order->items->map(fn ($i) => "{$i->quantity}x {$i->product_name}".($i->addons ? ' '.$i->addonText() : '').($i->note ? " ({$i->note})" : '')),
             '',
             'Total: Rp'.number_format($order->total, 0, ',', '.'),
             route('admin.orders.show', $order),

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['category_id', 'name', 'slug', 'description', 'price', 'prep_minutes', 'manual_cost', 'image_path', 'is_available', 'is_featured', 'sort_order'])]
@@ -30,6 +31,11 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function addons(): HasMany
+    {
+        return $this->hasMany(ProductAddon::class)->orderBy('sort_order')->orderBy('id');
     }
 
     public function ingredients(): BelongsToMany

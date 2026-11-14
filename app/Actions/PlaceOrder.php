@@ -14,7 +14,7 @@ class PlaceOrder
     /**
      * Buat pesanan baru. Harga selalu diambil dari database, bukan dari browser.
      *
-     * @param  array<int, array{product_id: int, quantity: int, note?: string|null}>  $items
+     * @param  array<int, array{product_id: int, quantity: int, note?: string|null, addons?: array<int, int>|null}>  $items
      * @param  array<string, mixed>  $attributes  kolom order lain (source, customer_name, table_number, ...)
      */
     public function handle(array $items, array $attributes = [], ?string $voucherCode = null, ?string $memberPhone = null): Order
@@ -27,7 +27,7 @@ class PlaceOrder
             }
         }
 
-        $products = Product::with('category', 'ingredients')
+        $products = Product::with('category', 'ingredients', 'addons')
             ->whereIn('id', array_column($items, 'product_id'))
             ->get()
             ->keyBy('id');
@@ -40,6 +40,21 @@ class PlaceOrder
                     'items' => ($product->name ?? 'Salah satu menu').' sedang tidak tersedia.',
                 ]);
             }
+        }
+
+        // Topping harus milik menu itu sendiri; harganya selalu diambil dari database.
+        foreach ($items as $index => $item) {
+            $product = $products->get($item['product_id']);
+            $chosen = array_values(array_unique(array_map('intval', $item['addons'] ?? [])));
+            $addons = $product->addons->whereIn('id', $chosen);
+
+            if ($addons->count() !== count($chosen)) {
+                throw ValidationException::withMessages([
+                    'items' => "Topping untuk {$product->name} sudah berubah. Buka menunya lagi dan pilih ulang toppingnya.",
+                ]);
+            }
+
+            $items[$index]['addons'] = $addons->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'price' => $a->price])->values()->all();
         }
 
         $this->ensureStock($items, $products);
@@ -59,13 +74,16 @@ class PlaceOrder
 
             foreach ($items as $item) {
                 $product = $products->get($item['product_id']);
-                $lineTotal = $product->price * $item['quantity'];
+                // Harga satuan sudah termasuk topping.
+                $unitPrice = $product->price + array_sum(array_column($item['addons'], 'price'));
+                $lineTotal = $unitPrice * $item['quantity'];
                 $subtotal += $lineTotal;
 
                 $order->items()->create([
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'price' => $product->price,
+                    'addons' => $item['addons'] ?: null,
+                    'price' => $unitPrice,
                     'quantity' => $item['quantity'],
                     'subtotal' => $lineTotal,
                     'note' => $item['note'] ?? null,

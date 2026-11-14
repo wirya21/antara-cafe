@@ -224,6 +224,7 @@
                     <li class="flex justify-between gap-4 text-sm">
                         <div>
                             <p><b>{{ $item->quantity }}×</b> {{ $item->product_name }}</p>
+                            @if ($item->addons)<p class="text-xs font-medium text-brand-600">{{ $item->addonText() }}</p>@endif
                             @if ($item->note)<p class="text-xs text-gray-500">{{ $item->note }}</p>@endif
                         </div>
                         <x-rupiah :value="$item->subtotal" />

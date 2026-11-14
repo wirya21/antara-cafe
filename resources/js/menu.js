@@ -15,6 +15,7 @@ export default (menu, initial = {}) => ({
     hasHistory: savedOrders().length > 0,
     detailNote: '',
     detailOptions: [],
+    detailAddons: [],
     customerName: initial.customerName ?? '',
     tableNumber: initial.tableNumber ?? '',
     paymentMethod: initial.paymentMethod ?? '',
@@ -33,7 +34,10 @@ export default (menu, initial = {}) => ({
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
             const products = this.allProducts;
-            this.cart = saved.filter((line) => products.some((p) => p.id === line.id && p.available));
+            this.cart = saved
+                .filter((line) => products.some((p) => p.id === line.id && p.available))
+                // Buang topping yang sudah dihapus admin sejak keranjang disimpan.
+                .map((line) => ({ ...line, addons: (line.addons ?? []).filter((id) => this.product(line.id).addons?.some((a) => a.id === id)) }));
         } catch {
             this.cart = [];
         }
@@ -84,7 +88,7 @@ export default (menu, initial = {}) => ({
     },
 
     get subtotal() {
-        return this.cart.reduce((sum, line) => sum + line.qty * (this.product(line.id)?.price ?? 0), 0);
+        return this.cart.reduce((sum, line) => sum + line.qty * this.unitPrice(line), 0);
     },
 
     discountOf(promo) {
@@ -134,16 +138,41 @@ export default (menu, initial = {}) => ({
         return inCart + qty <= left;
     },
 
-    add(id, qty = 1, note = '') {
+    /** Tombol + cepat: menu bertopping dibuka dulu supaya toppingnya bisa dipilih. */
+    quickAdd(product) {
+        product.addons?.length ? this.openDetail(product) : this.add(product.id);
+    },
+
+    add(id, qty = 1, note = '', addons = []) {
         if (!this.canAdd(id, qty)) return;
-        const line = this.cart.find((l) => l.id === id && (l.note ?? '') === note);
+        const sorted = [...addons].sort((a, b) => a - b);
+        const line = this.cart.find((l) => l.id === id && (l.note ?? '') === note && (l.addons ?? []).join(',') === sorted.join(','));
         if (line) {
             line.qty += qty;
         } else {
-            this.cart.push({ id, qty, note });
+            this.cart.push({ id, qty, note, addons: sorted });
         }
         this.bump = true;
         setTimeout(() => (this.bump = false), 300);
+    },
+
+    addonsOf(line) {
+        const product = this.product(line.id);
+        return (line.addons ?? []).map((id) => product?.addons?.find((a) => a.id === id)).filter(Boolean);
+    },
+
+    /** Harga satu porsi termasuk topping yang dipilih. */
+    unitPrice(line) {
+        return (this.product(line.id)?.price ?? 0) + this.addonsOf(line).reduce((sum, a) => sum + a.price, 0);
+    },
+
+    toggleAddon(id) {
+        const i = this.detailAddons.indexOf(id);
+        i === -1 ? this.detailAddons.push(id) : this.detailAddons.splice(i, 1);
+    },
+
+    get detailUnitPrice() {
+        return this.unitPrice({ id: this.detail.id, addons: this.detailAddons });
     },
 
     decrement(id) {
@@ -165,6 +194,7 @@ export default (menu, initial = {}) => ({
         this.detailQty = 1;
         this.detailNote = '';
         this.detailOptions = [];
+        this.detailAddons = [];
     },
 
     /** Permintaan gratis (tanpa biaya tambahan), disimpan sebagai catatan pesanan. */
@@ -193,7 +223,7 @@ export default (menu, initial = {}) => ({
     },
 
     addDetail() {
-        this.add(this.detail.id, this.detailQty, this.detailFullNote);
+        this.add(this.detail.id, this.detailQty, this.detailFullNote, this.detailAddons);
         this.detail = null;
     },
 

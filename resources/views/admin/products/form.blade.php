@@ -151,6 +151,32 @@
                 </div>
             </div>
 
+            {{-- Topping berbayar khusus menu ini --}}
+            @php
+                $addonRows = old('addons', $product->addons->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'price' => $a->price])->values()->all());
+            @endphp
+            <div class="rounded-xl border border-espresso-100 p-4" x-data="{ addons: @js(array_values($addonRows)) }">
+                <div class="flex items-center justify-between">
+                    <p class="label mb-0">3. Topping tambahan (opsional)</p>
+                    <button type="button" @click="addons.push({ id: '', name: '', price: '' })" class="text-sm font-semibold text-espresso-700 hover:underline">+ Tambah topping</button>
+                </div>
+                <p class="mt-1 text-xs text-espresso-600">Khusus menu ini, misalnya Nasi Goreng: Bakso, Extra telur, Sosis. Pelanggan dan kasir bisa memilih beberapa topping, harganya ditambahkan ke harga menu.</p>
+                <p x-show="!addons.length" class="mt-3 text-sm text-espresso-500">Belum ada topping.</p>
+                <template x-for="(addon, i) in addons" :key="i">
+                    <div class="mt-3 flex items-center gap-2">
+                        <input type="hidden" :name="`addons[${i}][id]`" :value="addon.id">
+                        <input :name="`addons[${i}][name]`" x-model="addon.name" maxlength="60" class="input" placeholder="Nama topping, mis. Extra telur">
+                        <div class="relative w-36 shrink-0">
+                            <span class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-espresso-500">Rp</span>
+                            <input type="number" min="0" step="500" :name="`addons[${i}][price]`" x-model="addon.price" class="input pl-9" placeholder="5000">
+                        </div>
+                        <button type="button" @click="addons.splice(i, 1)" class="shrink-0 px-1 text-red-700" aria-label="Hapus topping">✕</button>
+                    </div>
+                </template>
+                @error('addons.*.name') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('addons.*.price') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             <div class="flex gap-2">
                 <button class="btn-primary">Simpan</button>
                 <a href="{{ route('admin.products.index') }}" class="btn-ghost">Batal</a>

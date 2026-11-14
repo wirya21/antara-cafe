@@ -23,7 +23,7 @@ class MenuController extends Controller
     public function index(Request $request): View
     {
         $categories = Category::where('is_active', true)
-            ->with(['products' => fn ($q) => $q->with('ingredients')->orderBy('sort_order')->orderBy('name')])
+            ->with(['products' => fn ($q) => $q->with('ingredients', 'addons')->orderBy('sort_order')->orderBy('name')])
             ->whereHas('products')
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -41,6 +41,7 @@ class MenuController extends Controller
                 'image' => $product->image_url,
                 'available' => $product->isOrderable(),
                 'left' => $product->servingsLeft(),
+                'addons' => $product->addons->map->only('id', 'name', 'price')->values(),
                 'featured' => $product->is_featured,
                 'prep' => $product->prep_minutes,
                 'group' => $category->group,
@@ -89,6 +90,8 @@ class MenuController extends Controller
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:50'],
             'items.*.note' => ['nullable', 'string', 'max:120'],
+            'items.*.addons' => ['nullable', 'array', 'max:20'],
+            'items.*.addons.*' => ['integer'],
             'voucher_code' => ['nullable', 'string', 'max:30'],
             'member_phone' => ['nullable', 'string', 'regex:/^[0-9+\s-]{8,20}$/'],
             'payment_method' => ['required', Rule::in(array_keys(Order::availableSelfPaymentMethods()))],
