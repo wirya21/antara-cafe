@@ -55,6 +55,7 @@ class ProductController extends Controller
 
         $product = Product::create($data);
         $this->syncRecipe($product, $request);
+        $this->syncAddons($product, $request);
 
         return redirect()->route('admin.products.index')->with('status', 'Produk ditambahkan.');
     }
@@ -62,7 +63,7 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         return view('admin.products.form', [
-            'product' => $product->load('ingredients'),
+            'product' => $product->load('ingredients', 'addons'),
             'categories' => Category::orderBy('sort_order')->orderBy('name')->get(),
             'ingredients' => Ingredient::orderBy('name')->get(),
             'overheadPerServing' => Costing::overheadPerServing(),
@@ -84,6 +85,7 @@ class ProductController extends Controller
 
         $product->update($data);
         $this->syncRecipe($product, $request);
+        $this->syncAddons($product, $request);
 
         return redirect()->route('admin.products.index')->with('status', 'Produk diperbarui.');
     }
@@ -113,9 +115,16 @@ class ProductController extends Controller
             'recipe' => ['nullable', 'array'],
             'recipe.*.ingredient_id' => ['nullable', Rule::exists('ingredients', 'id')->where('cafe_id', Tenant::id())],
             'recipe.*.quantity' => ['nullable', 'numeric', 'min:0'],
+            'addons' => ['nullable', 'array', 'max:30'],
+            'addons.*.id' => ['nullable', 'integer'],
+            'addons.*.name' => ['nullable', 'string', 'max:60'],
+            'addons.*.price' => ['nullable', 'integer', 'min:0', 'max:10000000', 'required_with:addons.*.name'],
+        ], [
+            'addons.*.price.required_with' => 'Isi harga untuk setiap topping (boleh 0).',
+            'addons.*.price.integer' => 'Harga topping harus angka.',
         ]);
 
-        unset($data['image'], $data['recipe']);
+        unset($data['image'], $data['recipe'], $data['addons']);
         $data['slug'] = $this->uniqueSlug($data['name'], $product);
         $data['sort_order'] = $data['sort_order'] ?? 0;
         $data['is_available'] = $request->boolean('is_available');
@@ -131,6 +140,22 @@ class ProductController extends Controller
             ->mapWithKeys(fn ($row) => [(int) $row['ingredient_id'] => ['quantity' => (float) $row['quantity']]]);
 
         $product->ingredients()->sync($recipe);
+    }
+
+    /** Simpan topping: yang lama diperbarui (id tetap), yang baru dibuat, yang dihapus dari form ikut dihapus. */
+    private function syncAddons(Product $product, Request $request): void
+    {
+        $rows = collect($request->input('addons', []))->filter(fn ($row) => filled($row['name'] ?? null))->values();
+        $keep = [];
+
+        foreach ($rows as $order => $row) {
+            $values = ['name' => trim($row['name']), 'price' => (int) ($row['price'] ?? 0), 'sort_order' => $order];
+            $addon = filled($row['id'] ?? null) ? $product->addons()->find($row['id']) : null;
+            $addon ? $addon->update($values) : $addon = $product->addons()->create($values);
+            $keep[] = $addon->id;
+        }
+
+        $product->addons()->whereNotIn('id', $keep)->delete();
     }
 
     private function uniqueSlug(string $name, ?Product $product): string

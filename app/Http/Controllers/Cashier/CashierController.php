@@ -21,7 +21,7 @@ class CashierController extends Controller
     public function index(): View
     {
         $menu = Category::where('is_active', true)
-            ->with(['products' => fn ($q) => $q->where('is_available', true)->with('ingredients')->orderBy('sort_order')->orderBy('name')])
+            ->with(['products' => fn ($q) => $q->where('is_available', true)->with('ingredients', 'addons')->orderBy('sort_order')->orderBy('name')])
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
@@ -37,6 +37,7 @@ class CashierController extends Controller
                     'image' => $product->image_url,
                     'group' => $category->group,
                     'left' => $product->servingsLeft(),
+                    'addons' => $product->addons->map->only('id', 'name', 'price')->values(),
                 ])->values(),
             ])->values();
 
@@ -114,6 +115,8 @@ class CashierController extends Controller
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:100'],
             'items.*.note' => ['nullable', 'string', 'max:120'],
+            'items.*.addons' => ['nullable', 'array', 'max:20'],
+            'items.*.addons.*' => ['integer'],
             'voucher_code' => ['nullable', 'string', 'max:30'],
             'member_phone' => ['nullable', 'string', 'regex:/^[0-9+\s-]{8,20}$/'],
             'paid' => ['nullable', 'boolean'],
@@ -213,6 +216,7 @@ class CashierController extends Controller
                 'name' => $item->product_name,
                 'quantity' => $item->quantity,
                 'note' => $item->note,
+                'addons' => $item->addonText(),
             ]),
         ];
     }

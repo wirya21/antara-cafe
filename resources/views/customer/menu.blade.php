@@ -133,7 +133,7 @@
                                 <p class="truncate text-sm font-bold" x-text="p.name"></p>
                                 <p class="mt-0.5 text-sm font-semibold text-gray-600" x-text="rupiah(p.price)"></p>
                             </button>
-                            <button type="button" @click="add(p.id)" :disabled="!canAdd(p.id)" aria-label="Tambah"
+                            <button type="button" @click="quickAdd(p)" :disabled="!canAdd(p.id)" aria-label="Tambah"
                                     class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-500 text-white shadow-md shadow-brand-500/30 transition active:scale-90 disabled:opacity-30">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
                             </button>
@@ -179,7 +179,7 @@
                                 <div class="mt-auto flex items-center justify-between gap-2 pt-2">
                                     <span class="font-bold" x-text="rupiah(p.price)"></span>
                                     <template x-if="p.available && !qtyOf(p.id)">
-                                        <button type="button" @click="add(p.id)" aria-label="Tambah"
+                                        <button type="button" @click="quickAdd(p)" aria-label="Tambah"
                                                 class="grid h-9 w-9 place-items-center rounded-full bg-brand-500 text-white shadow-md shadow-brand-500/30 transition active:scale-90">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
                                         </button>
@@ -191,7 +191,7 @@
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
                                             </button>
                                             <span class="min-w-5 text-center font-bold tabular-nums" x-text="qtyOf(p.id)"></span>
-                                            <button type="button" @click="add(p.id)" aria-label="Tambah satu lagi" :disabled="!canAdd(p.id)"
+                                            <button type="button" @click="quickAdd(p)" aria-label="Tambah satu lagi" :disabled="!canAdd(p.id)"
                                                     class="grid h-8 w-8 place-items-center rounded-full bg-brand-500 text-white transition active:scale-90 disabled:opacity-30">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                                             </button>
@@ -269,7 +269,7 @@
                 </template>
 
                 <ul class="space-y-3">
-                    <template x-for="(line, i) in cart" :key="i + '-' + line.id + line.note">
+                    <template x-for="(line, i) in cart" :key="i + '-' + line.id + line.note + (line.addons ?? []).join(',')">
                         <li class="flex gap-3 rounded-2xl p-2 ring-1 ring-gray-100">
                             <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl">
                                 <template x-if="product(line.id).image"><img loading="lazy" decoding="async" :src="product(line.id).image" class="h-full w-full object-cover" alt=""></template>
@@ -279,8 +279,9 @@
                             </div>
                             <div class="min-w-0 flex-1 py-0.5">
                                 <p class="truncate text-sm font-bold" x-text="product(line.id).name"></p>
+                                <p x-show="addonsOf(line).length" class="line-clamp-2 text-xs font-medium text-gray-700" x-text="addonsOf(line).map(a => '+ ' + a.name).join(', ')"></p>
                                 <p x-show="line.note" class="line-clamp-2 text-xs text-gray-500" x-text="line.note"></p>
-                                <p class="mt-0.5 text-sm font-semibold text-brand-600" x-text="rupiah(product(line.id).price * line.qty)"></p>
+                                <p class="mt-0.5 text-sm font-semibold text-brand-600" x-text="rupiah(unitPrice(line) * line.qty)"></p>
                             </div>
                             <div class="flex items-center gap-2 self-center pr-1">
                                 <button type="button" @click="changeLine(i, -1)" aria-label="Kurangi" class="grid h-8 w-8 place-items-center rounded-full border border-gray-300 text-gray-700 active:scale-90">
@@ -294,6 +295,9 @@
                             <input type="hidden" :name="`items[${i}][product_id]`" :value="line.id">
                             <input type="hidden" :name="`items[${i}][quantity]`" :value="line.qty">
                             <input type="hidden" :name="`items[${i}][note]`" :value="line.note">
+                            <template x-for="addonId in (line.addons ?? [])" :key="addonId">
+                                <input type="hidden" :name="`items[${i}][addons][]`" :value="addonId">
+                            </template>
                         </li>
                     </template>
                 </ul>
@@ -458,6 +462,21 @@
                         <p x-show="detail.left !== null && detail.left <= {{ \App\Models\Product::LOW_SERVINGS }}" class="mt-2 text-sm font-bold text-red-600"
                            x-text="'Tinggal ' + detail.left + ' porsi hari ini' + (qtyOf(detail.id) ? ' (' + qtyOf(detail.id) + ' sudah di keranjang)' : '')"></p>
 
+                        <template x-if="detail.addons?.length">
+                            <div class="mt-5">
+                                <h4 class="text-sm font-bold">Topping tambahan <span class="font-medium text-gray-400">· opsional</span></h4>
+                                <div class="mt-2 divide-y divide-gray-100 rounded-2xl ring-1 ring-gray-200">
+                                    <template x-for="addon in detail.addons" :key="'a' + addon.id">
+                                        <label class="flex cursor-pointer items-center gap-3 px-4 py-3">
+                                            <input type="checkbox" class="h-5 w-5 rounded accent-brand-500" :checked="detailAddons.includes(addon.id)" @change="toggleAddon(addon.id)">
+                                            <span class="flex-1 text-sm font-semibold" x-text="addon.name"></span>
+                                            <span class="text-sm text-gray-600" x-text="'+' + rupiah(addon.price)"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
                         <h4 class="mt-5 text-sm font-bold">Sesuaikan pesanan <span class="font-medium text-green-700">· gratis</span></h4>
                         <div class="mt-2 flex flex-wrap gap-2">
                             <template x-for="option in optionsFor(detail.group)" :key="option">
@@ -501,7 +520,7 @@
                         <button type="button" @click="detailQty++" :disabled="!canAdd(detail.id, detailQty + 1)" class="grid h-10 w-10 place-items-center rounded-full bg-brand-500 text-lg font-bold text-white disabled:opacity-30" aria-label="Tambah">+</button>
                     </div>
                     <button type="button" @click="addDetail()" :disabled="!canAdd(detail.id, detailQty)" class="flex-1 rounded-2xl bg-brand-500 py-3.5 font-bold text-white shadow-lg shadow-brand-500/30 hover:bg-brand-600 disabled:opacity-40">
-                        Tambah · <span x-text="rupiah(detail.price * detailQty)"></span>
+                        Tambah · <span x-text="rupiah(detailUnitPrice * detailQty)"></span>
                     </button>
                 </div>
             </div>

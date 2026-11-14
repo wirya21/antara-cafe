@@ -27,6 +27,9 @@
     <table>
         @foreach ($order->items as $item)
             <tr><td colspan="2">{{ $item->product_name }}</td></tr>
+            @foreach ($item->addons ?? [] as $addon)
+                <tr><td colspan="2">&nbsp;+ {{ $addon['name'] }} {{ number_format($addon['price'], 0, ',', '.') }}</td></tr>
+            @endforeach
             <tr><td>{{ $item->quantity }} x {{ number_format($item->price, 0, ',', '.') }}</td><td class="r">{{ number_format($item->subtotal, 0, ',', '.') }}</td></tr>
         @endforeach
     </table>
